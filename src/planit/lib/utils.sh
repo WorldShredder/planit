@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-__COMPONENTS__=
+declare -a __C__
 
 while :; do
     case "$1" in
         -c | --componant)
-            IFS=, read -ra __COMPONENTS__ <<< "$2"
+            IFS=, read -ra __C__ <<< "$2"
             shift
             ;;
         --)
@@ -17,7 +17,7 @@ while :; do
     shift
 done
 
-if [ -z "${__COMPONENTS__[*]}" ] || [ " ${__COMPONENTS__[*]} " == ' ok ' ]; then
+if [ -z "${__C__[*]}" ] || [ " ${__C__[*]} " == ' ok ' ]; then
     # Usage: utils.ok [-i|--ignore EXIT_CODE,...] EXIT_CODE [EXIT_CODE ...]
     Plan::utils.ok() {
         local -a ignore
@@ -45,7 +45,7 @@ if [ -z "${__COMPONENTS__[*]}" ] || [ " ${__COMPONENTS__[*]} " == ' ok ' ]; then
     }
 fi
 
-if [ -z "${__COMPONENTS__[*]}" ] || [ " ${__COMPONENTS__[*]} " == ' cleanup ' ]; then
+if [ -z "${__C__[*]}" ] || [ " ${__C__[*]} " == ' cleanup ' ]; then
     # Usage: utils.cleanup [-p|--pids ARRAY_REF] [-f|--files ARRAY_REF]
     Plan::utils.cleanup() {
         local pids files
@@ -73,7 +73,7 @@ if [ -z "${__COMPONENTS__[*]}" ] || [ " ${__COMPONENTS__[*]} " == ' cleanup ' ];
     }
 fi
 
-if [ -z "${__COMPONENTS__[*]}" ] || [ " ${__COMPONENTS__[*]} " == ' exit ' ]; then
+if [ -z "${__C__[*]}" ] || [ " ${__C__[*]} " == ' exit ' ]; then
     # Usage: utils.exit [CODE] [CLEANUP_OPTIONS...]
     Plan::utils.exit() {
         trap - INT TERM HUP QUIT EXIT
@@ -108,7 +108,7 @@ if [ -z "${__COMPONENTS__[*]}" ] || [ " ${__COMPONENTS__[*]} " == ' exit ' ]; th
     }
 fi
 
-if [ -z "${__COMPONENTS__[*]}" ] || [ " ${__COMPONENTS__[*]} " == ' hr ' ]; then
+if [ -z "${__C__[*]}" ] || [ " ${__C__[*]} " == ' hr ' ]; then
     # Usage: utils.hr [COLOR]
     Plan::utils.hr() {
         local color="$1"
@@ -123,3 +123,5 @@ if [ -z "${__COMPONENTS__[*]}" ] || [ " ${__COMPONENTS__[*]} " == ' hr ' ]; then
         printf '%b%s%b\n' "$color" "$hr" "$color_end"
     }
 fi
+
+unset __C__
