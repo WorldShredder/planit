@@ -32,8 +32,8 @@ Plan::monitor.loop() {
         return 1
 
     local -a spinner
-    local spinner_str="${4:-⡏ ⡏ ⠟ ⠟ ⠻ ⠻ ⢹ ⢹ ⣸ ⣸ ⣴ ⣴ ⣦ ⣦ ⣇ ⣇}"
-    IFS=' ' read -r -a spinner <<< "$spinner_str"
+    local spinner_str="${4:-${PLAN__ICON_SPINNER:-⡏ ⠟ ⠻ ⢹ ⣸ ⣴ ⣦ ⣇}}"
+    IFS=' ' read -ra spinner <<< "$spinner_str"
 
     # We need max spinner char len for prefix padding
     local c
@@ -47,7 +47,6 @@ Plan::monitor.loop() {
     pre_len="$spin_len"+"${#title}"+2
 
     local last _last
-    # last="$(tail -n1 "$log_path" 2>/dev/null || :)"
     while kill -0 "$proc_pid" 2>/dev/null; do
         tput cr el
 

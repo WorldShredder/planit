@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# shellcheck disable=SC1091,SC2034
+# shellcheck disable=SC1090,SC1091,SC2034
 
 PLAN__PATH_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -84,39 +84,31 @@ for module in "${PLAN__PATH_MODULES[@]}"/*; do
     tee -a "$PLAN__PATH_LOG_ALL" > "$PLAN__PATH_LOG_ERR" < "$PLAN__PATH_FIFO_ERR" &
     PLAN__PID_CACHE+=("$!")
 
-    # TODO should source and run module in a subshell; maybe source everything
     PLAN__MODULE_TITLE='Running Process'
     PLAN__IGNORE_CODES=''
 
-    [ -f "${module}/init.conf" ] \
-        && source "${module}/init.conf"
-    [ -f "${module}/start.sh" ] \
-        && module="${module}/start.sh"
+    # Source in subshell to maintain clean environment in parent
+    (
+        [ -f "${module}/planit.conf" ] \
+            && source "${module}/planit.conf"
+        [ -f "${module}/start.sh" ] \
+            && module="${module}/start.sh"
 
-    /usr/bin/env bash "$module" \
-        1> "$PLAN__PATH_FIFO_OUT" \
-        2> "$PLAN__PATH_FIFO_ERR" &
+        /usr/bin/env bash "$module" \
+            1> "$PLAN__PATH_FIFO_OUT" \
+            2> "$PLAN__PATH_FIFO_ERR" &
 
-    # Monitor will propagate the error
-    Plan::monitor.run "$!" "$PLAN__PATH_LOG_OUT"
-    exit_code="$?"
+        # monitor.run propagates the module's exit code
+        Plan::monitor.run "$!" "$PLAN__PATH_LOG_OUT"
+        exit_code="$?"
 
-    if ! Plan::utils.ok -i "$PLAN__IGNORE_CODES" "$exit_code"; then
-        # Should handle this in the exit handler
-        # Example: Plan::utils.ok ... "$proc_code" || exit "$proc_code"
+        ! Plan::utils.ok -i "$PLAN__IGNORE_CODES" "$exit_code" \
+            && exit "$exit_code"
+
         printf '%b%s %b%s\033[0m\n' \
-            "$PLAN__COLOR_STEP_FAIL" "$PLAN__ICON_STEP_FAIL" \
+            "$PLAN__COLOR_STEP_OK" "$PLAN__ICON_STEP_OK" \
             "$PLAN__COLOR_STEP_TITLE" "$PLAN__MODULE_TITLE"
-        Plan::utils.hr "$PLAN__COLOR_STEP_FAIL"
-        printf '%b%s\033[0m\n' \
-            "$PLAN__COLOR_STEP_FAIL" "$(cat "$PLAN__PATH_LOG_ERR")"
-        Plan::utils.hr '\033[31m'
-        exit "$exit_code"
-    fi
-
-    printf '%b%s %b%s\033[0m\n' \
-        "$PLAN__COLOR_STEP_OK" "$PLAN__ICON_STEP_OK" \
-        "$PLAN__COLOR_STEP_TITLE" "$PLAN__MODULE_TITLE"
+    )
 done
 
 exit 0

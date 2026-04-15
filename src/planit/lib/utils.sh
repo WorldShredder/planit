@@ -80,19 +80,31 @@ if [ -z "${__COMPONENTS__[*]}" ] || [ " ${__COMPONENTS__[*]} " == ' exit ' ]; th
         tput cnorm
         local code=0
         if [[ "$1" =~ ^[0-9]+$ ]]; then
-            if [ "$1" != '0' ]; then
+            code="$1"
+            if [ "$code" != '0' ]; then
+                Plan::utils.print_error
                 local show_log_dir_path
                 [ -d "$PLAN__PATH_LOG" ] && [ "$PLAN__LOGGING_KEEP_LOGS" == 'true' ] \
                     && show_log_dir_path=" (see: '$PLAN__PATH_LOG')"
                 printf '\n\033[31m[%-5s] %s%s\033[0m\n' \
-                    'ERROR' 'Planit exiting with non-zero status' \
+                    'ERROR' "Planit failed with exit code '$code'" \
                     "$show_log_dir_path"
             fi
-            code="$1"
             shift
         fi
         Plan::utils.cleanup "$@" || true
         exit "$code"
+    }
+
+    # Usage: utils.print_error [MESSAGE]
+    Plan::utils.print_error() {
+        local message="${1:-$(cat "$PLAN__PATH_LOG_ERR")}"
+        printf '%b%s %b%s\033[0m\n' \
+            "$PLAN__COLOR_STEP_FAIL" "$PLAN__ICON_STEP_FAIL" \
+            "$PLAN__COLOR_STEP_TITLE" "$PLAN__MODULE_TITLE"
+        Plan::utils.hr "$PLAN__COLOR_STEP_FAIL"
+        printf '%b%s\033[0m\n' "$PLAN__COLOR_STEP_FAIL" "$message"
+        Plan::utils.hr '\033[31m'
     }
 fi
 
