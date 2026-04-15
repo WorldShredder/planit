@@ -59,7 +59,7 @@
             [ "${LOG_LEVELS[$level]}" -le 0 ] &&
                 continue
             icon="${LOG_LEVEL_ICONS[$level]}"
-            [ "${icon,,}" == 'default' ] \
+            [ -z "$icon" ] \
                 && icon="[$level]"
             color="${LOG_LEVEL_COLORS[$level]}"
             eval "PLAN::log.${level,,}() { "\
