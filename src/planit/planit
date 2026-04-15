@@ -2,14 +2,26 @@
 
 # shellcheck disable=SC1091,SC2034
 
+PLAN__PATH_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 while :; do
     case "$1" in
-        -r | --root)
-            PLAN__PATH_ROOT="$2"
+        -m | --modules)
+            if [ ! -d "$2" ]; then
+                printf '\033[31m[%-5s] %s\033[0m\n' \
+                    'ERROR' "Invalid modules path '$2'"
+                exit 1
+            fi
+            PLAN__PATH_MODULES="$2"
             shift
             ;;
-        -m | --modules)
-            PLAN__PATH_MODULES="$2"
+        -c | --config)
+            if [ ! -f "$2" ]; then
+                printf '\033[31m[%-5s] %s\033[0m\n' \
+                    'ERROR' "Invalid config path '$2'"
+                exit 1
+            fi
+            PLAN__PATH_CONFIG="$2"
             shift
             ;;
         --)
@@ -21,19 +33,9 @@ while :; do
     shift
 done
 
-if [ ! -f "${PLAN__PATH_ROOT}/planit" ]; then
-    printf '\033[31m[%-5s] %s\033[0m\n' \
-        'ERROR' "Invalid root path '$PLAN__PATH_ROOT'"
-    exit 1
-fi
-
-if [ ! -d "$PLAN__PATH_MODULES" ]; then
-    printf '\033[31m[%-5s] %s\033[0m\n' \
-        'ERROR' "Invalid modules path '$PLAN__PATH_MODULES'"
-    exit 1
-fi
-
 source "${PLAN__PATH_ROOT}/planit.conf"
+[ -n "$PLAN__PATH_CONFIG" ] \
+    && source "$PLAN__PATH_CONFIG"
 source "${PLAN__PATH_ROOT}/lib/utils.sh"
 source "${PLAN__PATH_ROOT}/lib/monitor.sh"
 
@@ -43,12 +45,21 @@ declare -a PLAN__FILE_CACHE
 trap 'Plan::utils.exit "$?" -p PLAN__PID_CACHE -f PLAN__FILE_CACHE' \
     INT TERM HUP QUIT EXIT
 
-PLAN__PATH_LOG="$(mktemp -d)"
+if [ -n "$PLAN__LOGGING_LOGS_DIR" ]; then
+    mkdir -p "$PLAN__LOGGING_LOGS_DIR" || {
+        printf '\033[31m[%-5s] %s\033[0m\n' \
+            'ERROR' "Failed to create dir '$PLAN__LOGGING_LOGS_DIR'"
+        exit 1
+    }
+    PLAN__PATH_LOG="$PLAN__LOGGING_LOGS_DIR"
+else
+    PLAN__PATH_LOG="$(mktemp -d)"
+fi
+[ "$PLAN__LOGGING_KEEP_LOGS" != 'true' ] \
+    && PLAN__FILE_CACHE+=("$PLAN__PATH_LOG")
 PLAN__PATH_LOG_OUT="${PLAN__PATH_LOG}/out.log"
 PLAN__PATH_LOG_ERR="${PLAN__PATH_LOG}/err.log"
 PLAN__PATH_LOG_ALL="${PLAN__PATH_LOG}/all.log"
-[ "$PLAN__LOGGING_KEEP_LOGS" != 'true' ] \
-    && PLAN__FILE_CACHE+=("$PLAN__PATH_LOG")
 
 PLAN__PATH_FIFO="${PLAN__PATH_LOG}/fifo"
 PLAN__PATH_FIFO_OUT="${PLAN__PATH_FIFO}/out"

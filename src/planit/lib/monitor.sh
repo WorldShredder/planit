@@ -51,9 +51,11 @@ Plan::monitor.loop() {
     while kill -0 "$proc_pid" 2>/dev/null; do
         tput cr el
 
-        _last="$(tail -n1 "$log_path" 2>/dev/null || :)"
-        [ -n "$_last" ] &&
-            last="$_last"
+        if [ "$PLAN__LOGGING_GET_LAST" != 'false' ]; then
+            _last="$(tail -n1 "$log_path" 2>/dev/null || :)"
+            [ -n "$_last" ] &&
+                last="$_last"
+        fi
 
         local -i delta
         delta="$(tput cols)"-"$pre_len"-"${#last}"
