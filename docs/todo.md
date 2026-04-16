@@ -2,9 +2,9 @@
 <h3 align=center>Todo List</h3>
 <br>
 
-- [ ] Derive module titles from directory/file names.
+- [x] Derive module titles from directory/file names.
 
-- [ ] Implement substep feature.
+- [x] Implement substep feature.
 
 - [ ] Store installer state on disk for install recovery.
 
