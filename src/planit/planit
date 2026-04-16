@@ -33,17 +33,24 @@ while :; do
     shift
 done
 
+#
+# Core Config
+#
+
 source "${PLAN__PATH_ROOT}/planit.conf"
 [ -n "$PLAN__PATH_CONFIG" ] \
     && source "$PLAN__PATH_CONFIG"
 source "${PLAN__PATH_ROOT}/lib/utils.sh"
-source "${PLAN__PATH_ROOT}/lib/monitor.sh"
 
 declare -a PLAN__PID_CACHE
 declare -a PLAN__FILE_CACHE
 
 trap 'Plan::utils.exit "$?" -p PLAN__PID_CACHE -f PLAN__FILE_CACHE' \
     INT TERM HUP QUIT EXIT
+
+#
+# Logging Setup
+#
 
 if [ -n "$PLAN__LOGGING_LOGS_DIR" ]; then
     mkdir -p "$PLAN__LOGGING_LOGS_DIR" || {
@@ -74,41 +81,57 @@ PLAN__FILE_CACHE+=("$PLAN__PATH_FIFO")
     exit 1
 }
 
-# Error handler will reset cursor and alt screens
-tput civis
+#
+# Run Modules
+#
 
-for module in "${PLAN__PATH_MODULES[@]}"/*; do
-    # Listeners
+source "${PLAN__PATH_ROOT}/lib/monitor.sh"
+source "${PLAN__PATH_ROOT}/lib/modules.sh"
+tput civis # Cursor reset by error handler
+
+declare -a PLAN__MODULES
+Plan::modules.fetch PLAN__MODULES "$PLAN__PATH_MODULES" || exit 1
+
+for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
+    module="${PLAN__MODULES[$i]}"
+
+    # Listeners closed after each module call
     tee -a "$PLAN__PATH_LOG_ALL" > "$PLAN__PATH_LOG_OUT" < "$PLAN__PATH_FIFO_OUT" &
     PLAN__PID_CACHE+=("$!")
     tee -a "$PLAN__PATH_LOG_ALL" > "$PLAN__PATH_LOG_ERR" < "$PLAN__PATH_FIFO_ERR" &
     PLAN__PID_CACHE+=("$!")
 
-    PLAN__MODULE_TITLE='Running Process'
-    PLAN__IGNORE_CODES=''
-
     # Source in subshell to maintain clean environment in parent
     (
-        [ -f "${module}/planit.conf" ] \
-            && source "${module}/planit.conf"
-        [ -f "${module}/start.sh" ] \
-            && module="${module}/start.sh"
+        config="$(Plan::modules.get_config "$module")" || exit 1
+
+        [ -n "$config" ] \
+            && { source "$config" || exit 1; }
+
+        if [ -z "$PLAN__MODULE_TITLE" ]; then
+            PLAN__MODULE_TITLE="$(Plan::modules.format_title "$module")"
+            [ -z "$PLAN__MODULE_TITLE" ] \
+                && PLAN__MODULE_TITLE="$PLAN__MODULES_DEFAULT_TITLE (#${i})"
+        fi
 
         /usr/bin/env bash "$module" \
             1> "$PLAN__PATH_FIFO_OUT" \
             2> "$PLAN__PATH_FIFO_ERR" &
 
-        # monitor.run propagates the module's exit code
         Plan::monitor.run "$!" "$PLAN__PATH_LOG_OUT"
         exit_code="$?"
 
-        ! Plan::utils.ok -i "$PLAN__IGNORE_CODES" "$exit_code" \
-            && exit "$exit_code"
+        if ! Plan::utils.ok -i "$PLAN__IGNORE_CODES" "$exit_code"; then
+            printf '%b%s %b%s\033[0m\n' \
+                "$PLAN__COLOR_STEP_FAIL" "$PLAN__ICON_STEP_FAIL" \
+                "$PLAN__COLOR_STEP_TITLE" "$PLAN__MODULE_TITLE"
+            exit "$exit_code"
+        fi
 
         printf '%b%s %b%s\033[0m\n' \
             "$PLAN__COLOR_STEP_OK" "$PLAN__ICON_STEP_OK" \
             "$PLAN__COLOR_STEP_TITLE" "$PLAN__MODULE_TITLE"
-    )
+    ) || exit "$?"
 done
 
 exit 0
