@@ -118,7 +118,7 @@ for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
             1> "$PLAN__PATH_FIFO_OUT" \
             2> "$PLAN__PATH_FIFO_ERR" &
 
-        Plan::monitor.run "$!" "$PLAN__PATH_LOG_OUT"
+        Plan::monitor.run "$!" "$PLAN__PATH_LOG_ALL"
         exit_code="$?"
 
         if ! Plan::utils.ok -i "$PLAN__IGNORE_CODES" "$exit_code"; then

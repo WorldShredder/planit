@@ -99,25 +99,39 @@ if [ -z "${__C__[*]}" ] || [ " ${__C__[*]} " == ' exit ' ]; then
     # Usage: utils.print_error [MESSAGE]
     Plan::utils.print_error() {
         local message="${1:-$(cat "$PLAN__PATH_LOG_ERR")}"
-        Plan::utils.hr "$PLAN__COLOR_STEP_FAIL"
-        printf '%b%s\033[0m\n' "$PLAN__COLOR_STEP_FAIL" "$message"
-        Plan::utils.hr "$PLAN__COLOR_STEP_FAIL"
+        Plan::utils.hr '1:52' " $PLAN__PATH_LOG_ERR " >&2
+        printf '%b%s\033[0m\n' "$PLAN__COLOR_STEP_FAIL" "$message" >&2
+        Plan::utils.hr '1:52' >&2
     }
 fi
 
 if [ -z "${__C__[*]}" ] || [ " ${__C__[*]} " == ' hr ' ]; then
-    # Usage: utils.hr [COLOR]
+    # Print horizontal row with optional ansi escape colors and header
+    # Usage: utils.hr [COLOR_FG:COLOR_BG] [HEADER]
     Plan::utils.hr() {
-        local color="$1"
-        local color_end
-        [ -n "$color" ] \
-            && color_end='\033[0m'
-        local cols hr i
+        local bg="${1%:*}"
+        local fg="${1#*:}"
+        local header="$2"
+        local color_end='\033[0m'
+
+        local -i cols i
         cols="$(tput cols)"
-        for ((i = 0; i < cols; i++)); do
-            hr+="$PLAN__ICON_HR"
-        done
-        printf '%b%s%b\n' "$color" "$hr" "$color_end"
+        (("${#header}" > cols)) \
+            && header="${header::cols-1}-"
+        local -i header_len="${#header}"
+        local -i hr_len=cols-header_len
+        local -i hr_llen=hr_len/2
+        local -i hr_rlen=hr_len-hr_llen
+
+        local hr="\033[0;38;5;${bg:-15}m"
+        for ((i = 0; i < hr_llen; i++)); do hr+="$PLAN__ICON_HR"; done
+        if [ -n "$header" ]; then
+            hr+="\033[38;5;${fg:-0};48;5;${bg:-15}m$header"
+            hr+="\033[0;38;5;${bg:-15}m"
+        fi
+        for ((i = 0; i < hr_rlen; i++)); do hr+="$PLAN__ICON_HR"; done
+
+        printf '%b%b\n' "$hr" "$color_end"
     }
 fi
 
