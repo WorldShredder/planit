@@ -8,6 +8,8 @@
 
 - [x] Store installer state on disk for install recovery.
 
+    - [ ] State file should contain hash of module's relative path for cleaner storage and to allow moving installer directory without losing state.
+
 - [ ] Optional configuration and planning through _yaml_ like **Ansible**.
 
     This will likely need something other than `yq`, e.g., **Python**. Require as little software as possible to use **Planit**.
