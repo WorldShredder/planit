@@ -124,7 +124,7 @@ if [ "$PLAN__STATE_TRACK" == 'true' ]; then
                 && break
         done
         printf '\033[34m[%-5s] %s\033[0m\n' \
-            'INFO' "Resume module ${init_module_idx}/${#PLAN__MODULES[@]}"
+            'INFO' "Resume module $((init_module_idx + 1))/${#PLAN__MODULES[@]}"
     fi
 fi
 
