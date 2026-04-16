@@ -82,7 +82,7 @@ PLAN__FILE_CACHE+=("$PLAN__PATH_FIFO")
 }
 
 #
-# Run Modules
+# Prepare Modules
 #
 
 source "${PLAN__PATH_ROOT}/lib/monitor.sh"
@@ -92,7 +92,47 @@ tput civis # Cursor reset by error handler
 declare -a PLAN__MODULES
 Plan::modules.fetch PLAN__MODULES "$PLAN__PATH_MODULES" || exit 1
 
-for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
+#
+# Install State
+#
+
+# The module index we must start at based on state
+declare -i init_module_idx=0
+
+if [ "$PLAN__STATE_TRACK" == 'true' ]; then
+    if [ -z "$PLAN__STATE_ID" ]; then
+        if ! PLAN__STATE_HASH="$(Plan::utils.md5 "${PLAN__MODULES[*]}")"; then
+            printf '\033[31m[%-5s] %s\033[0m\n' \
+                'ERROR' "Failed to create Planit state hash"
+            exit 1
+        fi
+    fi
+    readonly PLAN__STATE_HASH PLAN__STATE_ID PLAN__STATE_DIR
+    readonly PLAN__STATE_NAME="planit.${PLAN__STATE_ID:-$PLAN__STATE_HASH}.state"
+    readonly PLAN__STATE_PATH="${PLAN__STATE_DIR}/$PLAN__STATE_NAME"
+    if ! [ -e "$PLAN__STATE_PATH" ]; then
+        printf '%s' "${PLAN__MODULES[0]}" > "$PLAN__STATE_PATH"
+    else
+        if ! state="$(cat "$PLAN__STATE_PATH")"; then
+            printf '\033[31m[%-5s] %s\033[0m\n' \
+                'ERROR' "Failed to retrieve state from '$PLAN__STATE_PATH'"
+            exit 1
+        fi
+        for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
+            init_module_idx="$i"
+            [ "${PLAN__MODULES[$i]}" == "$state" ] \
+                && break
+        done
+        printf '\033[34m[%-5s] %s\033[0m\n' \
+            'INFO' "Resume module ${init_module_idx}/${#PLAN__MODULES[@]}"
+    fi
+fi
+
+#
+# Execute Modules
+#
+
+for ((i = init_module_idx; i < "${#PLAN__MODULES[@]}"; i++)); do
     module="${PLAN__MODULES[$i]}"
 
     # Listeners closed after each module call
@@ -132,6 +172,10 @@ for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
             "$PLAN__COLOR_STEP_OK" "$PLAN__ICON_STEP_OK" \
             "$PLAN__COLOR_STEP_TITLE" "$PLAN__MODULE_TITLE"
     ) || exit "$?"
+
+    # Update state file here to empty it on last module
+    [ "$PLAN__STATE_TRACK" == 'true' ] \
+        && printf '%s' "${PLAN__MODULES[$((i + 1))]}" > "$PLAN__STATE_PATH"
 done
 
 exit 0

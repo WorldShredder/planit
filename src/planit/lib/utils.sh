@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# shellcheck disable=SC1090,SC1091,SC2034
+
 declare -a __C__
 
 while :; do
@@ -132,6 +134,27 @@ if [ -z "${__C__[*]}" ] || [ " ${__C__[*]} " == ' hr ' ]; then
         for ((i = 0; i < hr_rlen; i++)); do hr+="$PLAN__ICON_HR"; done
 
         printf '%b%b\n' "$hr" "$color_end"
+    }
+fi
+
+if [ -z "${__C__[*]}" ] || [ " ${__C__[*]} " == ' md5 ' ]; then
+    Plan::utils.md5() {
+        local res
+        res="$(md5sum <<< "$1")" && cut -d' ' -f1 <<< "$res"
+    }
+fi
+
+if [ -z "${__C__[*]}" ] || [ " ${__C__[*]} " == ' sha1 ' ]; then
+    Plan::utils.sha160() {
+        local res
+        res="$(sha1sum <<< "$1")" && cut -d' ' -f1 <<< "$res"
+    }
+fi
+
+if [ -z "${__C__[*]}" ] || [ " ${__C__[*]} " == ' sha256 ' ]; then
+    Plan::utils.sha256() {
+        local res
+        res="$(sha256sum <<< "$1")" && cut -d' ' -f1 <<< "$res"
     }
 fi
 

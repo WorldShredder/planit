@@ -6,7 +6,7 @@
 
 - [x] Implement substep feature.
 
-- [ ] Store installer state on disk for install recovery.
+- [x] Store installer state on disk for install recovery.
 
 - [ ] Optional configuration and planning through _yaml_ like **Ansible**.
 
@@ -21,6 +21,14 @@
 - [ ] Detect and alert stalled module.
 
     If stdin is handled with control provided by a foreground process in an alt screen, detection could offer a resolution route via the same system.
+
+- [ ] Implement module counter for non-default module titles.
+
+    ```
+    ✔ Updating Apt Repos (1/7)
+    ✔ Installing Depends (2/7)
+    ⣴ Cloning Branch 'main' (3/7)
+    ```
 
 - [ ] Implement general terminal logging functions.
 
