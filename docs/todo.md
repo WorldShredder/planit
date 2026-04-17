@@ -8,7 +8,7 @@
 
 - [x] Store installer state on disk for install recovery.
 
-    - [ ] State file should contain hash of module's relative path for cleaner storage and to allow moving installer directory without losing state.
+    - [x] State file should contain hash of module's relative path for cleaner storage and to allow moving installer directory without losing state.
 
 - [ ] Optional configuration and planning through _yaml_ like **Ansible**.
 
@@ -111,3 +111,5 @@
     ```
 
     </details>
+
+- [x] **Planit** error should not lead to printing `err.log`.

@@ -100,29 +100,24 @@ Plan::modules.fetch PLAN__MODULES "$PLAN__PATH_MODULES" || exit 1
 declare -i init_module_idx=0
 
 if [ "$PLAN__STATE_TRACK" == 'true' ]; then
-    if [ -z "$PLAN__STATE_ID" ]; then
-        if ! PLAN__STATE_HASH="$(Plan::utils.md5 "${PLAN__MODULES[*]}")"; then
+    if [ -z "$PLAN__STATE_ID" ] || [ "$PLAN__STATE_HASH_ID" == 'true' ]; then
+        if ! PLAN__STATE_HASH="$(Plan::modules.generate_state_hash)"; then
             printf '\033[31m[%-5s] %s\033[0m\n' \
                 'ERROR' "Failed to create Planit state hash"
             exit 1
         fi
     fi
     readonly PLAN__STATE_HASH PLAN__STATE_ID PLAN__STATE_DIR
-    readonly PLAN__STATE_NAME="planit.${PLAN__STATE_ID:-$PLAN__STATE_HASH}.state"
+    readonly PLAN__STATE_NAME="planit.${PLAN__STATE_HASH:-$PLAN__STATE_ID}.state"
     readonly PLAN__STATE_PATH="${PLAN__STATE_DIR}/$PLAN__STATE_NAME"
     if ! [ -e "$PLAN__STATE_PATH" ]; then
-        printf '%s' "${PLAN__MODULES[0]}" > "$PLAN__STATE_PATH"
+        Plan::modules.save_state "${PLAN__MODULES[0]}" || exit 1
     else
-        if ! state="$(cat "$PLAN__STATE_PATH")"; then
+        if ! init_module_idx="$(Plan::modules.fetch_state_idx)"; then
             printf '\033[31m[%-5s] %s\033[0m\n' \
                 'ERROR' "Failed to retrieve state from '$PLAN__STATE_PATH'"
             exit 1
         fi
-        for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
-            init_module_idx="$i"
-            [ "${PLAN__MODULES[$i]}" == "$state" ] \
-                && break
-        done
         printf '\033[34m[%-5s] %s\033[0m\n' \
             'INFO' "Resume module $((init_module_idx + 1))/${#PLAN__MODULES[@]}"
     fi
@@ -151,7 +146,7 @@ for ((i = init_module_idx; i < "${#PLAN__MODULES[@]}"; i++)); do
         if [ -z "$PLAN__MODULE_TITLE" ]; then
             PLAN__MODULE_TITLE="$(Plan::modules.format_title "$module")"
             [ -z "$PLAN__MODULE_TITLE" ] \
-                && PLAN__MODULE_TITLE="$PLAN__MODULES_DEFAULT_TITLE (#${i})"
+                && PLAN__MODULE_TITLE="$PLAN__MODULES_DEFAULT_TITLE (#$((i + 1)))"
         fi
 
         /usr/bin/env bash "$module" \
@@ -174,8 +169,7 @@ for ((i = init_module_idx; i < "${#PLAN__MODULES[@]}"; i++)); do
     ) || exit "$?"
 
     # Update state file here to empty it on last module
-    [ "$PLAN__STATE_TRACK" == 'true' ] \
-        && printf '%s' "${PLAN__MODULES[$((i + 1))]}" > "$PLAN__STATE_PATH"
+    Plan::modules.save_state "${PLAN__MODULES[$((i + 1))]}"
 done
 
 exit 0

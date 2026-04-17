@@ -2,6 +2,8 @@
 
 # shellcheck disable=SC1090,SC1091,SC2034
 
+source "${PLAN__PATH_ROOT}/lib/utils.sh" --component md5
+
 # Populates a provided array nameref with modules to execute
 # Usage: modules.fetch ARRAY_NAMEREF MODULES_PATH
 # Return: Error on disallowed symlink
@@ -77,4 +79,61 @@ Plan::modules.get_config() {
         return 1
     fi
     printf '%s' "$config"
+}
+
+# Generate state hash for state file or module
+# Usage: modules.save_state MODULE_PATH
+# Return: 1 on error or hash string
+Plan::modules.generate_state_hash() {
+    local salt="$1"
+    local state_id="${PLAN__STATE_ID}${PLAN__MODULES[*]}"
+    [ -n "$state_id" ] \
+        && Plan::utils.md5 "${salt}${state_id}"
+}
+
+Plan::modules.generate_module_hash() {
+    # Relative module path to prevent losing state when moving install dir
+    local module="${1#*${PLAN__PATH_MODULES}/}"
+    Plan::modules.generate_state_hash "$module"
+}
+
+# Hash given module and store in state file
+# Usage: modules.save_state MODULE_PATH
+# Return: 0|1 depending on save state
+Plan::modules.save_state() {
+    local module state
+    module="$1"
+    if ! state="$(Plan::modules.generate_module_hash "$1")"; then
+        printf '\033[31m[%-5s] %s\033[0m\n' \
+            'ERROR' "Failed to generate module hash '$module'"
+        return 1
+    fi
+    if ! printf '%s' "$state" > "$PLAN__STATE_PATH"; then
+        printf '\033[31m[%-5s] %s\033[0m\n' \
+            'ERROR' "Write failed to state file '$PLAN__STATE_PATH'"
+        return 1
+    fi
+    return 0
+}
+
+Plan::modules.fetch_state() {
+    local state
+    state="$(cat "$PLAN__STATE_PATH" 2> /dev/null)" \
+        || return 1
+    printf '%s' "$state"
+}
+
+Plan::modules.fetch_state_idx() {
+    local i state module_hash
+    local -i state_idx=0
+    state="$(Plan::modules.fetch_state)" || return 1
+    for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
+        module_hash="$(Plan::modules.generate_module_hash "${PLAN__MODULES[$i]}")" \
+            || return 1
+        if [ "$state" == "$module_hash" ]; then
+            state_idx="$i"
+            break
+        fi
+    done
+    printf '%d' "$state_idx"
 }
