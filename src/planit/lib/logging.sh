@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+
+# shellcheck disable=SC1090,SC1091,SC2034
+
+source "${PLAN__PATH_ROOT}/import.sh" Plan::log
+
+if Plan::import 'logger'; then
+    declare -A PLAN__LOG_LEVELS
+    declare -A PLAN__LOG_ICONS
+    declare -A PLAN__LOG_COLORS
+
+    Plan::log.init() {
+        PLAN__LOG_LEVEL="${PLAN__LOGGING_LEVEL:-NONE}"
+        PLAN__CALLER_LEVEL="${PLAN__LOGGING_CALLER_LEVEL:-NONE}"
+
+        PLAN__LOG_LEVELS[NONE]=0
+        PLAN__LOG_LEVELS[ERROR]=1
+        PLAN__LOG_LEVELS[WARN]=2
+        PLAN__LOG_LEVELS[INFO]=3
+        PLAN__LOG_LEVELS[DEBUG]=4
+
+        PLAN__LOG_ICONS[ERROR]="$PLAN__ICONS_LOG_ERROR"
+        PLAN__LOG_ICONS[WARN]="$PLAN__ICONS_LOG_WARN"
+        PLAN__LOG_ICONS[INFO]="$PLAN__ICONS_LOG_INFO"
+        PLAN__LOG_ICONS[DEBUG]="$PLAN__ICONS_LOG_DEBUG"
+
+        PLAN__LOG_COLORS[ERROR]="$PLAN__COLORS_LOG_ERROR"
+        PLAN__LOG_COLORS[WARN]="$PLAN__COLORS_LOG_WARN"
+        PLAN__LOG_COLORS[INFO]="$PLAN__COLORS_LOG_INFO"
+        PLAN__LOG_COLORS[DEBUG]="$PLAN__COLORS_LOG_DEBUG"
+
+        # init
+        local level icon color
+        for level in "${!PLAN__LOG_LEVELS[@]}"; do
+            [ "${PLAN__LOG_LEVELS[$level]}" -le 0 ] \
+                && continue
+            icon="${PLAN__LOG_ICONS[$level]}"
+            [ -z "$icon" ] \
+                && icon="$(printf '[%-5s]' "$level")"
+            color="${PLAN__LOG_COLORS[$level]}"
+            eval "Plan::log.${level,,}() { \
+                      Plan::log.logger '${level}' '${icon}' '${color}' \"\$*\"; \
+                  }"
+        done
+
+        # shellcheck disable=SC2329
+        Plan::log.logger() {
+            local level="$1"
+            local icon="$2"
+            local color="$3"
+            shift 3
+            local message="$*"
+
+            local global_level="${PLAN__LOG_LEVELS[$PLAN__LOG_LEVEL]}"
+            local global_caller_level="${PLAN__LOG_LEVELS[$PLAN__CALLER_LEVEL]}"
+            local local_level="${PLAN__LOG_LEVELS[$level]}"
+
+            if [ "$local_level" -gt "$global_level" ] || [ "$global_level" -lt 1 ]; then
+                return 0
+            fi
+
+            local caller
+            [ "$local_level" -le "$global_caller_level" ] \
+                && local caller="${FUNCNAME[2]}: "
+
+            printf '%b%s %s%s\033[0m\n' "$color" "$icon" "$caller" "$message"
+        }
+
+        unset -f Plan::log.init
+    }
+
+    # initialize all loggers
+    Plan::log.init
+fi
+
+Plan::import.clean

@@ -1,58 +1,11 @@
 #!/usr/bin/env bash
 
-# Usage: source /path/to/module [OPTION ...]
-#
-# Options
-#   -c, --component  Specify one or more components to source; comma-separated.
-#                    If no components are specified, all are imported.
-#   -o, --overwrite  Overwrite existing components; disabled by default.
-#
-# Example
-#   source my/module.sh -c fn1,fn2,fn3 --overwrite
-
 # shellcheck disable=SC1090,SC1091,SC2034
 
-declare -a __C__
-__NAMESPACE__='Plan::utils'
-__OVERWRITE__='false'
+source "${PLAN__PATH_ROOT}/lib/logging.sh" -c logger
+source "${PLAN__PATH_ROOT}/import.sh" Plan::utils
 
-while :; do
-    case "$1" in
-        -c | --component)
-            IFS=, read -ra __C__ <<< "$2"
-            shift
-            ;;
-        -o | --overwrite)
-            __OVERWRITE__='true'
-            ;;
-        --)
-            shift
-            break
-            ;;
-        *) break ;;
-    esac
-    shift
-done
-
-Plan::__import__() {
-    # Handles source dynamically and prevents double imports
-    local module="$1"
-    local exists='false'
-    command -v "${__NAMESPACE__}.${module}" &> /dev/null \
-        && exists='true'
-
-    if [ "$exists" == 'true' ] && [ "$__OVERWRITE__" != 'true' ]; then
-        return 1
-    fi
-
-    if [ -z "${__C__[*]}" ] || [ " ${__C__[*]} " == " $module " ]; then
-        return 0
-    fi
-
-    return 1
-}
-
-if Plan::__import__ 'ok'; then
+if Plan::import 'ok'; then
     # Usage: utils.ok [-i|--ignore EXIT_CODE,...] EXIT_CODE [EXIT_CODE ...]
     Plan::utils.ok() {
         local -a ignore
@@ -80,7 +33,7 @@ if Plan::__import__ 'ok'; then
     }
 fi
 
-if Plan::__import__ 'cleanup'; then
+if Plan::import 'cleanup'; then
     # Usage: utils.cleanup [-p|--pids ARRAY_REF] [-f|--files ARRAY_REF]
     Plan::utils.cleanup() {
         local pids files
@@ -108,7 +61,7 @@ if Plan::__import__ 'cleanup'; then
     }
 fi
 
-if Plan::__import__ 'exit'; then
+if Plan::import 'exit'; then
     # Usage: utils.exit [CODE] [CLEANUP_OPTIONS...]
     Plan::utils.exit() {
         trap - INT TERM HUP QUIT EXIT
@@ -121,9 +74,8 @@ if Plan::__import__ 'exit'; then
                 local show_log_dir_path
                 [ -d "$PLAN__PATH_LOG" ] && [ "$PLAN__LOGGING_KEEP_LOGS" == 'true' ] \
                     && show_log_dir_path=" (see: '$PLAN__PATH_LOG')"
-                printf '\033[31m[%-5s] %s%s\033[0m\n' \
-                    'ERROR' "Planit failed with exit code '$code'" \
-                    "$show_log_dir_path"
+                local message="Planit failed with exit code '$code'"
+                Plan::log.error "${message}${show_log_dir_path}"
             fi
             shift
         fi
@@ -142,7 +94,7 @@ if Plan::__import__ 'exit'; then
     }
 fi
 
-if Plan::__import__ 'hr'; then
+if Plan::import 'hr'; then
     # Print horizontal row with optional ansi escape colors and header
     # Usage: utils.hr [COLOR_FG:COLOR_BG] [HEADER]
     Plan::utils.hr() {
@@ -172,7 +124,7 @@ if Plan::__import__ 'hr'; then
     }
 fi
 
-if Plan::__import__ 'md5'; then
+if Plan::import 'md5'; then
     Plan::utils.md5() {
         [ -z "$1" ] && return 1
         local res
@@ -180,7 +132,7 @@ if Plan::__import__ 'md5'; then
     }
 fi
 
-if Plan::__import__ 'sha1'; then
+if Plan::import 'sha1'; then
     Plan::utils.sha160() {
         [ -z "$1" ] && return 1
         local res
@@ -188,7 +140,7 @@ if Plan::__import__ 'sha1'; then
     }
 fi
 
-if Plan::__import__ 'sha256'; then
+if Plan::import 'sha256'; then
     Plan::utils.sha256() {
         [ -z "$1" ] && return 1
         local res
@@ -196,5 +148,4 @@ if Plan::__import__ 'sha256'; then
     }
 fi
 
-unset __C__ __NAMESPACE__ __OVERWRITE__
-unset -f Plan::__import__
+Plan::import.clean

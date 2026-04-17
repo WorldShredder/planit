@@ -3,6 +3,7 @@
 # shellcheck disable=SC1090,SC1091,SC2034
 
 source "${PLAN__PATH_ROOT}/lib/utils.sh" --component md5
+source "${PLAN__PATH_ROOT}/lib/logging.sh" --component logger
 
 # Populates a provided array nameref with modules to execute
 # Usage: modules.fetch ARRAY_NAMEREF MODULES_PATH
@@ -17,8 +18,7 @@ Plan::modules.fetch() {
     fi
     for path in "$src"/*; do
         if [ -L "$path" ] && [ "$PLAN__MODULES_SYMLINKS" != 'true' ]; then
-            printf '\033[31m[%-5s] %s\033[0m\n' \
-                'ERROR' "Symlinks not allowed '$path'"
+            Plan::log.error "Symlinks not allowed '$path'"
             return 1
         fi
         if [ -d "$path" ]; then
@@ -74,8 +74,7 @@ Plan::modules.get_config() {
         fi
     fi
     if [ -L "$config" ] && [ "$PLAN__MODULES_SYMLINKS" != 'true' ]; then
-        printf '\033[31m[%-5s] %s\033[0m\n' \
-            'ERROR' "Symlinks not allowed '$config'"
+        Plan::log.error "Symlinks not allowed '$config'"
         return 1
     fi
     printf '%s' "$config"
@@ -104,13 +103,11 @@ Plan::modules.save_state() {
     local module state
     module="$1"
     if ! state="$(Plan::modules.generate_module_hash "$1")"; then
-        printf '\033[31m[%-5s] %s\033[0m\n' \
-            'ERROR' "Failed to generate module hash '$module'"
+        Plan::log.error "Failed to generate module hash '$module'"
         return 1
     fi
     if ! printf '%s' "$state" > "$PLAN__STATE_PATH"; then
-        printf '\033[31m[%-5s] %s\033[0m\n' \
-            'ERROR' "Write failed to state file '$PLAN__STATE_PATH'"
+        Plan::log.error "Write to state file failed '$PLAN__STATE_PATH'"
         return 1
     fi
     return 0

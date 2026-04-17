@@ -32,7 +32,7 @@
     ⣴ Cloning Branch 'main' (3/7)
     ```
 
-- [ ] Implement general terminal logging functions.
+- [x] Implement general terminal logging functions.
 
     <details>
     <summary>Show details...</summary>
@@ -113,3 +113,9 @@
     </details>
 
 - [x] **Planit** error should not lead to printing `err.log`.
+
+- [ ] Implement a `ui.sh` library for drawing padded boxes and containers.
+
+    Use for displaying installer steps and errors.
+
+- [ ] Recovery mode should print success status for each completed module.
