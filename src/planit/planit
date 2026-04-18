@@ -39,13 +39,17 @@ source "${PLAN__PATH_ROOT}/planit.conf"
 [ -n "$PLAN__PATH_CONFIG" ] \
     && source "$PLAN__PATH_CONFIG"
 source "${PLAN__PATH_ROOT}/lib/utils.sh"
+source "${PLAN__PATH_ROOT}/lib/proc.sh"
 source "${PLAN__PATH_ROOT}/lib/logging.sh" -c logger
 
 declare -a PLAN__PID_CACHE
 declare -a PLAN__FILE_CACHE
 
-trap 'Plan::utils.exit "$?" -p PLAN__PID_CACHE -f PLAN__FILE_CACHE' \
-    INT TERM HUP QUIT EXIT
+trap 'Plan::proc.exit -c "$?" -g "$$" -- -p PLAN__PID_CACHE -f PLAN__FILE_CACHE' \
+    QUIT EXIT
+
+trap 'printf "\n"; Plan::proc.exit -c "$?" -g "$$" -- -p PLAN__PID_CACHE -f PLAN__FILE_CACHE' \
+    INT TERM HUP
 
 #
 # Logging Setup
@@ -91,7 +95,7 @@ declare -a PLAN__MODULES
 Plan::modules.fetch PLAN__MODULES "$PLAN__PATH_MODULES" || exit 1
 
 #
-# Install State
+# Installer State
 #
 
 # The module index we must start at based on state
@@ -110,6 +114,7 @@ if [ "$PLAN__STATE_TRACK" == 'true' ]; then
     if ! [ -e "$PLAN__STATE_PATH" ]; then
         Plan::modules.save_state "${PLAN__MODULES[0]}" || exit 1
     else
+        Plan::log.debug "State file found '$PLAN__STATE_PATH'"
         if ! init_module_idx="$(Plan::modules.fetch_state_idx)"; then
             Plan::log.error "Failed to fetch state from '$PLAN__STATE_PATH'"
             exit 1

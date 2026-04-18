@@ -2,7 +2,7 @@
 <h3 align=center>Modular Installer Framework</h3>
 <br>
 
-**Planit** is a lightweight, modular installer framework for Bash4, and can be used as an alternative to **Ansible** when setting up low-resource systems.
+**Planit** is a lightweight, modular Bash4 installer framework for Linux that simplifies multi-step software installation workflows without runtime dependencies. Designed for developers who need to ship self-contained installers with minimal overhead -- all modules are executed through a single framework that adds negligible size to your release.
 
 ## Getting Started
 

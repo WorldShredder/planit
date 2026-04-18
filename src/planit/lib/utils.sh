@@ -3,10 +3,23 @@
 # shellcheck disable=SC1090,SC1091,SC2034
 
 source "${PLAN__PATH_ROOT}/lib/logging.sh" -c logger
-source "${PLAN__PATH_ROOT}/import.sh" Plan::utils
+
+# Initialize module
+source "${PLAN__PATH_ROOT}/import.sh" Plan::utils "$@"
 
 if Plan::import 'ok'; then
-    # Usage: utils.ok [-i|--ignore EXIT_CODE,...] EXIT_CODE [EXIT_CODE ...]
+    # Usage: utils.ok [OPTION ...] EXIT_CODE [EXIT_CODE ...]
+    #
+    # Propagates non-zero EXIT_CODE if not in ignore list.
+    #
+    # Positional Args:
+    #   EXIT_CODE  One or more exit codes separated by a space to check against
+    #              an ignore list.
+    #
+    # Options:
+    #   -i, --ignore  Comma-separated list of exit codes to ignore when
+    #                 evaluating EXIT_CODE.
+    #
     Plan::utils.ok() {
         local -a ignore
         while :; do
@@ -33,70 +46,18 @@ if Plan::import 'ok'; then
     }
 fi
 
-if Plan::import 'cleanup'; then
-    # Usage: utils.cleanup [-p|--pids ARRAY_REF] [-f|--files ARRAY_REF]
-    Plan::utils.cleanup() {
-        local pids files
-        while :; do
-            case "$1" in
-                -p | --pids)
-                    local -n pids="$2"
-                    shift
-                    ;;
-                -f | --files)
-                    local -n files="$2"
-                    shift
-                    ;;
-                --)
-                    shift
-                    break
-                    ;;
-                *) break ;;
-            esac
-            shift
-        done
-        local target
-        for target in "${pids[@]}"; do kill -9 "$target" 2> /dev/null; done
-        for target in "${files[@]}"; do rm -rf "$target"; done
-    }
-fi
-
-if Plan::import 'exit'; then
-    # Usage: utils.exit [CODE] [CLEANUP_OPTIONS...]
-    Plan::utils.exit() {
-        trap - INT TERM HUP QUIT EXIT
-        tput cnorm
-        local code=0
-        if [[ "$1" =~ ^[0-9]+$ ]]; then
-            code="$1"
-            if [ "$1" != '0' ]; then
-                Plan::utils.print_error
-                local show_log_dir_path
-                [ -d "$PLAN__PATH_LOG" ] && [ "$PLAN__LOGGING_KEEP_LOGS" == 'true' ] \
-                    && show_log_dir_path=" (see: '$PLAN__PATH_LOG')"
-                local message="Planit failed with exit code '$code'"
-                Plan::log.error "${message}${show_log_dir_path}"
-            fi
-            shift
-        fi
-        Plan::utils.cleanup "$@" || true
-        exit "$code"
-    }
-
-    # Usage: utils.print_error [MESSAGE]
-    Plan::utils.print_error() {
-        local message="${1:-$(cat "$PLAN__PATH_LOG_ERR" 2> /dev/null)}"
-        if [ -n "$message" ]; then
-            Plan::utils.hr '1:52' " $PLAN__PATH_LOG_ERR " >&2
-            printf '%b%s\033[0m\n' "$PLAN__COLOR_STEP_FAIL" "$message" >&2
-            Plan::utils.hr '1:52' >&2
-        fi
-    }
-fi
-
 if Plan::import 'hr'; then
-    # Print horizontal row with optional ansi escape colors and header
+    # Print horizontal row with optional ANSI escape colors and header
+
     # Usage: utils.hr [COLOR_FG:COLOR_BG] [HEADER]
+    #
+    # Print horizontal row with optional ansi escape colors and header.
+    #
+    # Positional Args:
+    #   COLORS  Background and foreground colors as ANSI color codes deliniated
+    #           by a single colon, e.g., '176:212'.
+    #   HEADER  An optional header to display in the center of the line.
+    #
     Plan::utils.hr() {
         local bg="${1%:*}"
         local fg="${1#*:}"
@@ -125,6 +86,12 @@ if Plan::import 'hr'; then
 fi
 
 if Plan::import 'md5'; then
+    # Usage: utils.md5 INPUT
+    #
+    # Return the md5 hash of a given INPUT using md5sum or non-zero exit code.
+    #
+    # Positional Args:
+    #   INPUT  The input string to hash.
     Plan::utils.md5() {
         [ -z "$1" ] && return 1
         local res
@@ -133,7 +100,13 @@ if Plan::import 'md5'; then
 fi
 
 if Plan::import 'sha1'; then
-    Plan::utils.sha160() {
+    # Usage: utils.sha1 INPUT
+    #
+    # Return the sha1 hash of a given INPUT using sha1sum or non-zero exit code.
+    #
+    # Positional Args:
+    #   INPUT  The input string to hash.
+    Plan::utils.sha1() {
         [ -z "$1" ] && return 1
         local res
         res="$(sha1sum <<< "$1")" && cut -d' ' -f1 <<< "$res"
@@ -141,6 +114,12 @@ if Plan::import 'sha1'; then
 fi
 
 if Plan::import 'sha256'; then
+    # Usage: utils.sha256 INPUT
+    #
+    # Return the sha256 hash of a given INPUT using sha256sum or non-zero exit code.
+    #
+    # Positional Args:
+    #   INPUT  The input string to hash.
     Plan::utils.sha256() {
         [ -z "$1" ] && return 1
         local res

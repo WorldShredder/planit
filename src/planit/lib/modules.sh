@@ -5,9 +5,17 @@
 source "${PLAN__PATH_ROOT}/lib/utils.sh" --component md5
 source "${PLAN__PATH_ROOT}/lib/logging.sh" --component logger
 
-# Populates a provided array nameref with modules to execute
 # Usage: modules.fetch ARRAY_NAMEREF MODULES_PATH
-# Return: Error on disallowed symlink
+#
+# Populates an array with modules to execute.
+#
+# Positional Args:
+#   ARRAY_NAMEREF  The name of an array to populate with module paths.
+#   MODULES_PATH   Path to the directory containing modules to collect.
+#
+# Return:
+#   Exit code 1 on disallowed symlink
+#
 Plan::modules.fetch() {
     local -n dest="$1"
     local src="$2"
@@ -30,9 +38,19 @@ Plan::modules.fetch() {
     return 0
 }
 
-# Formats title of given module or returns a default title
 # Usage: modules.format_title MODULE_PATH
-# Return: Formatted module title or empty
+#
+# Formats the title of a given module or returns a default title.
+#
+# Positional Args:
+#   MODULE_PATH  The path of the module to derive the title from. If the module
+#                file name is a non-title name (e.g. init.sh) then format_title()
+#                will scan the parent directory's name.
+#
+# Return:
+#   Formatted title or empty string if last member of MODULE_PATH or its parent
+#   directory fail regex match.
+#
 Plan::modules.format_title() {
     local name="${1##*/}"
     if [ "$name" == 'init.sh' ]; then
@@ -58,9 +76,17 @@ Plan::modules.format_title() {
     printf '%s' "${title[*]}"
 }
 
-# Get module config in given path
-# Usage: modules.get_config MODULE_PATH|MODULE_DIR_PATH
-# Return: Error on disallowed symlink or config path
+# Usage: modules.get_config MODULE_PATH
+#
+# Retrieve a module config from a given path.
+#
+# Positional Args:
+#   MODULE_PATH  Path to a module or module directory containing a planit.conf
+#                or module.conf file.
+#
+# Return:
+#   Exit code (1) on disallowed symlink or config path.
+#
 Plan::modules.get_config() {
     local path="$1"
     local config
@@ -80,9 +106,17 @@ Plan::modules.get_config() {
     printf '%s' "$config"
 }
 
-# Generate state hash for state file or module
-# Usage: modules.save_state MODULE_PATH
-# Return: 1 on error or hash string
+# Usage: modules.generate_state_hash SALT
+#
+# Generates a state hash from PLAN__STATE_ID, PLAN__MODULES members and an
+# optional salt.
+#
+# Positional Args:
+#   SALT  Ideally, a deterministic value to add as a prefix before hashing.
+#
+# Return:
+#   The state hash string or last exit code from hash function.
+#
 Plan::modules.generate_state_hash() {
     local salt="$1"
     local state_id="${PLAN__STATE_ID}${PLAN__MODULES[*]}"
@@ -90,15 +124,34 @@ Plan::modules.generate_state_hash() {
         && Plan::utils.md5 "${salt}${state_id}"
 }
 
+# Usage: modules.generate_module_hash MODULE_PATH
+#
+# Generates a state hash of a module by passing MODULE_PATH as the salt of
+# the generate_state_hash() function.
+#
+# Positional Args:
+#   MODULE_PATH  Path of the module to hash. This should be a member of
+#                the PLAN__MODULES array.
+#
+# Return:
+#   The module state hash string or last exit code from hash function.
+#
 Plan::modules.generate_module_hash() {
     # Relative module path to prevent losing state when moving install dir
-    local module="${1#*${PLAN__PATH_MODULES}/}"
+    local module="${1#*"${PLAN__PATH_MODULES}"/}"
     Plan::modules.generate_state_hash "$module"
 }
 
-# Hash given module and store in state file
 # Usage: modules.save_state MODULE_PATH
-# Return: 0|1 depending on save state
+#
+# Hash given module and store state in state file.
+#
+# Positional Args:
+#   MODULE_PATH  Path of the module to store.
+#
+# Return:
+#   Exit code (1) on error or (0).
+#
 Plan::modules.save_state() {
     local module state
     module="$1"
@@ -113,6 +166,10 @@ Plan::modules.save_state() {
     return 0
 }
 
+# Usage: modules.fetch_state
+#
+# Returns current state hash in PLAN__STATE_PATH or exit code (1) on error.
+#
 Plan::modules.fetch_state() {
     local state
     state="$(cat "$PLAN__STATE_PATH" 2> /dev/null)" \
@@ -120,6 +177,11 @@ Plan::modules.fetch_state() {
     printf '%s' "$state"
 }
 
+# Usage: modules.fetch_state_idx
+#
+# Fetch and return the current state and get its index in PLAN__MODULES.
+# Return exit code (1) on error.
+#
 Plan::modules.fetch_state_idx() {
     local i state module_hash
     local -i state_idx=0

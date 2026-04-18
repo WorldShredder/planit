@@ -2,7 +2,8 @@
 
 # shellcheck disable=SC1090,SC1091,SC2034
 
-source "${PLAN__PATH_ROOT}/import.sh" Plan::log
+# Initialize module
+source "${PLAN__PATH_ROOT}/import.sh" Plan::log "$@"
 
 if Plan::import 'logger'; then
     declare -A PLAN__LOG_LEVELS
@@ -63,7 +64,7 @@ if Plan::import 'logger'; then
             [ "$local_level" -le "$global_caller_level" ] \
                 && local caller="${FUNCNAME[2]}: "
 
-            printf '%b%s %s%s\033[0m\n' "$color" "$icon" "$caller" "$message"
+            printf '%b%s %s%s\033[0m\n' "$color" "$icon" "$caller" "$message" >&2
         }
 
         unset -f Plan::log.init

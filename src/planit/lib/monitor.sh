@@ -3,10 +3,17 @@
 PLAN__COLOR_SPINNER="${PLAN__COLOR_SPINNER:-'\033[38;5;75m'}"
 PLAN__COLOR_STEP_TITLE="${PLAN__COLOR_STEP_TITLE:-'\033[38;5;99m'}"
 
-# Usage: monitor.start PID [ARGS...]
-# @param pid int: Process ID to monitor
-# @param @args any: Args for monitor_loop()
-# @return proc_code int, loop_code int
+# Usage: monitor.start PID [ARGS ...]
+#
+# Run a process monitor for a given process ID.
+#
+# Positional Args:
+#   PID   The ID of the process to monitor.
+#   ARGS  Additional args passed to monitor.loop().
+#
+# Return:
+#   Exit code of given process.
+#
 Plan::monitor.run() {
     local proc_pid="$1"
     Plan::monitor.loop "$@" &
@@ -23,6 +30,23 @@ Plan::monitor.run() {
 # @param proc_pid int: Process ID to monitor
 # @param log_path str: Path to log file used by pid
 # @param title str: Step title to print
+
+# Usage: monitor.loop PID LOG_PATH [TITLE] [SPINNER]
+#
+# Monitor a given PID and loop over process log entries from LOG_PATH.
+# This function consumes a single terminal line to print the latest log entry
+# and truncates the entry if it exceeds `tput cols`.
+#
+# Positional Args:
+#   PID       The process ID to monitor.
+#   LOG_PATH  Log file path to retrieve process logs from.
+#   TITLE     Title to display in the report loop's prefix.
+#   SPINNER   Space-separated string of spinner segments to iterate over
+#             while the loop is active. Displayed in front of TITLE.
+#
+# Return:
+#   Exit code (1) on error.
+#
 Plan::monitor.loop() {
     local proc_pid="$1"
     local log_path="$2"

@@ -2,25 +2,13 @@
 <h3 align=center>Todo List</h3>
 <br>
 
+### Module/Process Handling
+
 - [x] Derive module titles from directory/file names.
 
 - [x] Implement substep feature.
 
-- [x] Store installer state on disk for install recovery.
-
-    - [x] State file should contain hash of module's relative path for cleaner storage and to allow moving installer directory without losing state.
-
-- [ ] Optional configuration and planning through _yaml_ like **Ansible**.
-
-    This will likely need something other than `yq`, e.g., **Python**. Require as little software as possible to use **Planit**.
-
-- [ ] Create test cases.
-
-- [ ] Handle requests on stdin (maybe?)
-
-    This feature would be outside the scope of **Planit** but would be nice to have. Maybe allow bringing background process into foreground on an alt screen.
-
-- [ ] Detect and alert stalled module.
+- [ ] Detect and report stalled module with a provided timout.
 
     If stdin is handled with control provided by a foreground process in an alt screen, detection could offer a resolution route via the same system.
 
@@ -32,90 +20,79 @@
     ⣴ Cloning Branch 'main' (3/7)
     ```
 
+- [ ] Expose more environment variables to modules for additional control over installer state, e.g., internal step recovery.
+
+- [ ] Allow passing arguments to module calls; maybe use a new module-specific config option (this would require the name of the specific module)
+
+### State & Recovery
+
+- [x] Store installer state on disk for install recovery.
+
+    - [x] State file should contain hash of module's relative path for cleaner storage and to allow moving installer directory without losing state.
+
+- [ ] Recovery mode should print success status for each completed module.
+
+- [ ] Implement internal step recovery; this can be accomplished by exposing modules to an environment variable pointing to its own FIFO and a function to calculate an internal state hash.
+
+### Configuration
+
+- [ ] Optional configuration and planning through _yaml_ like **Ansible**.
+
+    This will likely need something other than `yq`, e.g., **Python**. Require as little software as possible to use **Planit**.
+
+### Logging & Reporting
+
 - [x] Implement general terminal logging functions.
 
-    <details>
-    <summary>Show details...</summary>
+- [x] **Planit**-specific error should not lead to printing `err.log`.
 
-    ```sh
-    # Might be some bugs but looks right
+- [ ] Handle requests on stdin (maybe?)
 
-    LOG_LEVEL="${PLAN__LOGGING_LEVEL:-NONE}"
-    CALLER_LEVEL="${PLAN__LOGGING_CALLER_LEVEL}"
+    This feature would be outside the scope of **Planit** but would be nice to have. Maybe allow bringing background process into foreground on an alt screen.
 
-    declare -A LOG_LEVELS
-    LOG_LEVELS[NONE]=0
-    LOG_LEVELS[ERROR]=1
-    LOG_LEVELS[WARN]=2
-    LOG_LEVELS[INFO]=3
-    LOG_LEVELS[DEBUG]=4
+- [ ] Add more debug logs.
 
-    declare -A LOG_LEVEL_ICONS
-    LOG_LEVEL_ICONS[ERROR]="$PLAN__ICONS_LOG_ERROR"
-    LOG_LEVEL_ICONS[WARN]="$PLAN__ICONS_LOG_WARN"
-    LOG_LEVEL_ICONS[INFO]="$PLAN__ICONS_LOG_INFO"
-    LOG_LEVEL_ICONS[DEBUG]="$PLAN__ICONS_LOG_DEBUG"
+### User Interface
 
-    declare -A LOG_LEVEL_COLORS
-    LOG_LEVEL_ICONS[ERROR]="$PLAN__COLORS_LOG_ERROR"
-    LOG_LEVEL_ICONS[WARN]="$PLAN__COLORS_LOG_WARN"
-    LOG_LEVEL_ICONS[INFO]="$PLAN__COLORS_LOG_INFO"
-    LOG_LEVEL_ICONS[DEBUG]="$PLAN__COLORS_LOG_DEBUG"
+- [x] `utils.cleanup()` is probably killing PIDs in an unsafe manner for long running sessions.
 
-    PLAN::logger() {
-        # init
-        local level icon color
-        for level in "${!LOG_LEVELS[@]}"; do
-            [ "${LOG_LEVELS[$level]}" -le 0 ] &&
-                continue
-            icon="${LOG_LEVEL_ICONS[$level]}"
-            [ -z "$icon" ] \
-                && icon="[$level]"
-            color="${LOG_LEVEL_COLORS[$level]}"
-            eval "PLAN::log.${level,,}() { "\
-                "PLAN::logger '${level}' '${icon}' '${color}' \"\$*\"; "\
-            "}"
-        done
-        # logger
-        PLAN::logger()
-        {
-            local level icon color message
-            read -r level icon color message <<< "$@"
-            local message="$*"
-            # log() is never called directly
-            if ! [ "${LOG_LEVELS[$LOG_LEVEL]}" -ge "${LOG_LEVELS[$level]}" ] \
-            || ! [ "${LOG_LEVELS[$LOG_LEVEL]}" -gt 0 ]; then
-                return 0
-            fi
-            local caller
-            if [ "${LOG_LEVELS[$CALLER_LEVEL]}" -ge "${LOG_LEVELS[$level]}" ] \
-            && [ "${LOG_LEVELS[$LOG_LEVEL]}" -gt 0 ]; then
-                local caller="${FUNCNAME[2]}: "
-            fi
-            printf '%b%s %s%s\033[0m\n' "$color" "$icon" "$caller" "$message"
-        }
-    }
-    ```
+    **Options:**
 
-    Usage:
-
-    ```sh
-    # Initialize logging functions
-    PLAN::logger
-
-    # Now we can use it
-    PLAN::log.error Exiting with error code "$code"
-    PLAN::log.warn Path does not exist "'$path'"
-    PLAN::log.info Modules found in "'$path'"
-    PLAN::log.debug Execution time "$((end-start))ms"
-    ```
-
-    </details>
-
-- [x] **Planit** error should not lead to printing `err.log`.
+    1. Kill by job.
+    2. Kill all children, e.g.: `kill -- -$$` with `SIGTERM` trap.
+    3. Remove successful PIDs from `PLAN__PID_CACHE` (race conditions apply on cancel signal)
 
 - [ ] Implement a `ui.sh` library for drawing padded boxes and containers.
 
     Use for displaying installer steps and errors.
 
-- [ ] Recovery mode should print success status for each completed module.
+- [ ] Add progress percent/bar functionality via new fifo `PLAN__PATH_FIFO_PROGRESS`.
+
+### Testing
+
+- [ ] Create test case for framework bootstrap.
+
+- [ ] Create test cases for import system.
+
+- [ ] Create test cases for `logging.sh`
+
+- [ ] Create test cases for `modules.sh`
+
+- [ ] Create test cases for `monitor.sh`
+
+- [ ] Create test cases for `proc.sh`
+
+- [ ] Create test cases for `utils.sh`
+
+- [ ] Create test cases for installer:
+
+    - [ ] w/no sub-directories
+
+    - [ ] w/sub-directories
+
+    - [ ] w/sub-directories & `init.sh`
+
+### Documentation
+
+- [ ] Transfer in-file docstrings to Markdown, leaving only `Usage` line comments.
+
