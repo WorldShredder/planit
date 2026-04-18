@@ -27,11 +27,6 @@ Plan::monitor.run() {
 }
 
 # Usage: monitor.loop PID LOG_PATH [TITLE] [SPINNER]
-# @param proc_pid int: Process ID to monitor
-# @param log_path str: Path to log file used by pid
-# @param title str: Step title to print
-
-# Usage: monitor.loop PID LOG_PATH [TITLE] [SPINNER]
 #
 # Monitor a given PID and loop over process log entries from LOG_PATH.
 # This function consumes a single terminal line to print the latest log entry
