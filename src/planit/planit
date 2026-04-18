@@ -145,8 +145,13 @@ for ((i = init_module_idx; i < "${#PLAN__MODULES[@]}"; i++)); do
 
         if [ -z "$PLAN__MODULE_TITLE" ]; then
             PLAN__MODULE_TITLE="$(Plan::modules.format_title "$module")"
-            [ -z "$PLAN__MODULE_TITLE" ] \
-                && PLAN__MODULE_TITLE="$PLAN__MODULES_DEFAULT_TITLE (#$((i + 1)))"
+            if [ -z "$PLAN__MODULE_TITLE" ]; then
+                if [ "$PLAN__MODULES_ENFORCE_TITLE" == 'true' ]; then
+                    Plan::log.error "Invalid module title '$module'"
+                    exit 1
+                fi
+                PLAN__MODULE_TITLE="$PLAN__MODULES_DEFAULT_TITLE (#$((i + 1)))"
+            fi
         fi
 
         /usr/bin/env bash "$module" \

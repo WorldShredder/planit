@@ -62,7 +62,21 @@ Plan::modules.format_title() {
     if [[ "$name" =~ ^[0-9]+_\[.+\](\.sh)?$ ]]; then
         name="${name#*\[}"
         name="${name%]*}"
-        read -ra title <<< "$name"
+        local -i i
+        local char next_char _title
+        for ((i = 0; i < "${#name}"; i++)); do
+            char="${name:i:1}"
+            next_char="${name:i+1:1}"
+            if [ "$char" == '%' ]; then
+                _title+="$next_char"
+                i+=1
+            elif [ "$char" == '_' ]; then
+                _title+=' '
+            else
+                _title+="$char"
+            fi
+        done
+        read -ra title <<< "$_title"
     elif [[ "$name" =~ ^[0-9]+_.+(\.sh)?$ ]]; then
         name="${name#*_}"
         name="${name%.sh*}"
