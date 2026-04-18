@@ -8,6 +8,14 @@
 
 - [x] Implement substep feature.
 
+- [x] `utils.cleanup()` is probably killing PIDs in an unsafe manner for long running sessions.
+
+    **Options:**
+
+    1. Kill by job.
+    2. Kill all children, e.g.: `kill -- -$$` with `SIGTERM` trap.
+    3. Remove successful PIDs from `PLAN__PID_CACHE` (race conditions apply on cancel signal)
+
 - [ ] Detect and report stalled module with a provided timout.
 
     If stdin is handled with control provided by a foreground process in an alt screen, detection could offer a resolution route via the same system.
@@ -53,14 +61,6 @@
 - [ ] Add more debug logs.
 
 ### User Interface
-
-- [x] `utils.cleanup()` is probably killing PIDs in an unsafe manner for long running sessions.
-
-    **Options:**
-
-    1. Kill by job.
-    2. Kill all children, e.g.: `kill -- -$$` with `SIGTERM` trap.
-    3. Remove successful PIDs from `PLAN__PID_CACHE` (race conditions apply on cancel signal)
 
 - [ ] Implement a `ui.sh` library for drawing padded boxes and containers.
 
