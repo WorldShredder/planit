@@ -3,20 +3,17 @@
 # shellcheck disable=SC1090,SC1091,SC2034
 
 PLAN__PATH_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PLAN__PATH_MODULES="${PLAN__PATH_ROOT}/../modules"
 
 while :; do
     case "$1" in
         -m | --modules)
-            if [ ! -d "$2" ]; then
-                printf '\033[31mInit Error: %s' "Invalid modules path '$2'"
-                exit 1
-            fi
             PLAN__PATH_MODULES="$2"
             shift
             ;;
         -c | --config)
             if [ ! -f "$2" ]; then
-                printf '\033[31mInit Error: %s' "Invalid config path '$2'"
+                printf '\033[31mError: PlanInit: %s' "Invalid config path '$2'"
                 exit 1
             fi
             PLAN__PATH_CONFIG="$2"
@@ -30,6 +27,11 @@ while :; do
     esac
     shift
 done
+
+if [ ! -d "$PLAN__PATH_MODULES" ]; then
+    printf '\033[31mError: PlanInit: %s' "Invalid modules path '$PLAN__PATH_MODULES'"
+    exit 1
+fi
 
 #
 # Core Config

@@ -16,6 +16,16 @@
     2. Kill all children, e.g.: `kill -- -$$` with `SIGTERM` trap.
     3. Remove successful PIDs from `PLAN__PID_CACHE` (race conditions apply on cancel signal)
 
+- [ ] ⚠️ **(Critical)** Allow sourcing of modules in the main module execution loop.
+
+    - Modules should be allowed to influence the environment of subsequent modules.
+
+    - This can be accomplished by allowing some modules to be sourced into the main execution loop.
+
+    - Sourced modules must be of file type `.sh` (extension requirement TBD).
+
+    - Requires the entire execution loop be ran in a subshell to prevent main environment contamination.
+
 - [ ] Detect and report stalled module with a provided timout.
 
     If stdin is handled with control provided by a foreground process in an alt screen, detection could offer a resolution route via the same system.

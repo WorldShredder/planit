@@ -22,9 +22,46 @@
 
 ## Getting Started
 
+Example installation directory:
+
+```
+installer/
+└── modules
+    ├── 10_prepare_environment.sh
+    ├── 20_update_apt_repositories.sh
+    ├── 30_boostrapping
+    │   ├── 10_install_dependencies.sh
+    │   ├── 20_configure_dependencies.sh
+    │   └── 30_bootstrap_environment.sh
+    ├── 40_download_source_pkg.sh
+    ├── 50_[Configure_and_Make_LCP-v2.x].sh
+    ├── 60_[Install_LCP-v2.x].sh
+    └── 70_post_install
+        ├── 10_[Update_RC_Config].sh
+        └── 20_cleaning_up.sh
+```
+
 1. Clone the repository
 
     ```sh
     git clone --depth 1 https://github.com/worldshredder/planit
     ```
+
+2. Add **Planit** to your installer directory
+
+    ```sh
+    mv planit/src/planit path/to/installer
+    ```
+
+3. Create the main installer script `installer/install`
+
+    ```sh
+    #!/usr/bin/env bash
+
+    pwd="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+    "${pwd}/planit/planit" --modules "${pwd}/modules"
+    ```
+
+
 
