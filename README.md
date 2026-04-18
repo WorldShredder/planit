@@ -16,7 +16,7 @@
 
 - Provide abstraction layers for package managers, configuration templating, or conditional logic
 
-- Support advanced workflows like parallel execution (for now), rollback functionality, or testing and validation framworks
+- Support advanced workflows like parallel execution (for now), rollback functionality, or testing and validation frameworks
 
 - Handle pre-installation dependencies before the framework runs (you manage bootstrapping in your modules)
 
