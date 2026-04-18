@@ -1,4 +1,4 @@
-<h1 align=center>Planit</h1>
+<h1 align=center>Planit 🪐</h1>
 <h3 align=center>Modular Installer Framework</h3>
 <br>
 
