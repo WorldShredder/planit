@@ -16,7 +16,7 @@
 
 - Provide abstraction layers for package managers, configuration templating, or conditional logic
 
-- Support advanced workflows like parallel execution (for now), rollback functionality, or testing and validation frameworks
+- Support user inputs over _stdin_ or advanced workflows like parallel execution (for now), rollback functionality, or testing and validation frameworks
 
 - Handle pre-installation dependencies before the framework runs (you manage bootstrapping in your modules)
 
@@ -25,21 +25,25 @@
 Example installation directory:
 
 ```
-installer/
-└── modules
-    ├── 10_prepare_environment.sh
-    ├── 20_update_apt_repositories.sh
-    ├── 30_boostrapping
-    │   ├── 10_install_dependencies.sh
-    │   ├── 20_configure_dependencies.sh
-    │   └── 30_bootstrap_environment.sh
-    ├── 40_download_source_pkg.sh
-    ├── 50_[Configure_and_Make_LCP-v2.x].sh
-    ├── 60_[Install_LCP-v2.x].sh
-    └── 70_post_install
-        ├── 10_[Update_RC_Config].sh
-        └── 20_cleaning_up.sh
+MyInstaller/
+├── install
+├── modules
+│   ├── 10_bootstrap/
+│   │   ├── 10_update_apt_repositories.sh
+│   │   ├── 20_install_dependencies.sh
+│   │   └── 30_configure_dependencies.sh
+│   ├── 20_pre_install/
+│   │   ├── 10_download_source_pkg.sh
+│   │   └── 20_[Make_LCP-v2.x_Binary].sh
+│   ├── 30_[Install_LCP-v2.x].sh
+│   ├── 40_post_install/
+│   │   ├── 10_[Update_RC_Config].sh
+│   │   └── 20_cleaning_up.sh
+│   └── 50_verify_installation.sh
+└── planit.conf
 ```
+
+#### Installer Setup
 
 1. Clone the repository
 
@@ -50,18 +54,46 @@ installer/
 2. Add **Planit** to your installer directory
 
     ```sh
-    mv planit/src/planit path/to/installer
+    mv planit/src/planit MyInstaller/
     ```
 
-3. Create the main installer script `installer/install`
+3. (Optional) Define custom settings in `MyInstaller/planit.conf`
+
+    ```sh
+    PLAN__STATE_ID='MyInstaller'
+    PLAN__LOGGING_LEVEL='WARN'
+    PLAN__MODULES_DEFAULT_TITLE='MyInstaller Module'
+    ```
+
+3. Create the main installer script `MyInstaller/install`
 
     ```sh
     #!/usr/bin/env bash
 
     pwd="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-    "${pwd}/planit/planit" --modules "${pwd}/modules"
+    # Run planit
+    "${pwd}/planit/planit"
     ```
 
+    If your `modules` directory or `planit.conf` are located outside of the main installer directory, you must provide **Planit** their paths:
 
+    ```sh
+    "${pwd}/planit/planit" \
+        --modules 'path/to/modules' \
+        --config 'path/to/config'
+    ```
 
+4. (Optional) Set executable permissions
+
+    ```sh
+    chmod +x MyInstaller/install
+    ```
+
+#### Installer Execution
+
+Installation can be initiated by simply executing the main install script
+
+```sh
+bash MyInstaller/install
+```

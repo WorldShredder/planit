@@ -106,3 +106,4 @@
 
 - [ ] Transfer in-file docstrings to Markdown, leaving only `Usage` line comments.
 
+- [ ] Create a `print_help` function or `src/planit/docs/help.txt` and add a `-h|--help` parameter to **Planit's** option parser.

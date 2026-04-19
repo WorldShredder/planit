@@ -4,6 +4,7 @@
 
 PLAN__PATH_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PLAN__PATH_MODULES="${PLAN__PATH_ROOT}/../modules"
+PLAN__PATH_CONFIG="${PLAN__PATH_ROOT}/../planit.conf"
 
 while :; do
     case "$1" in
@@ -156,7 +157,12 @@ for ((i = init_module_idx; i < "${#PLAN__MODULES[@]}"; i++)); do
             fi
         fi
 
-        /usr/bin/env bash "$module" \
+        declare -a cmd
+        PLAN__MODULE_CMD="${PLAN__MODULE_CMD:-"$PLAN__MODULES_DEFAULT_CMD"}"
+        [ -n "$PLAN__MODULE_CMD" ] \
+            && read -ra cmd <<< "$PLAN__MODULE_CMD"
+
+        "${cmd[@]}" "$module" \
             1> "$PLAN__PATH_FIFO_OUT" \
             2> "$PLAN__PATH_FIFO_ERR" &
 
