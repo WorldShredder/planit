@@ -16,7 +16,9 @@
     2. Kill all children, e.g.: `kill -- -$$` with `SIGTERM` trap.
     3. Remove successful PIDs from `PLAN__PID_CACHE` (race conditions apply on cancel signal)
 
-- [ ] ⚠️ **(Critical)** Allow sourcing of modules in the main module execution loop.
+- [ ] **(Critical)** Add option to run custom cleanup scripts -- global scope and module scope -- before **Planit** cleanup.
+
+- [ ] **(Critical)** Allow sourcing of modules in the main module execution loop.
 
     - Modules should be allowed to influence the environment of subsequent modules.
 
