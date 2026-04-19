@@ -121,8 +121,9 @@ if [ "$PLAN__STATE_TRACK" == 'true' ]; then
         if ! init_module_idx="$(Plan::modules.fetch_state_idx)"; then
             Plan::log.error "Failed to fetch state from '$PLAN__STATE_PATH'"
             exit 1
+        elif [ "$init_module_idx" -gt '0' ]; then
+            Plan::log.info "Resume module $((init_module_idx + 1))/${#PLAN__MODULES[@]}"
         fi
-        Plan::log.info "Resume module $((init_module_idx + 1))/${#PLAN__MODULES[@]}"
     fi
 fi
 
