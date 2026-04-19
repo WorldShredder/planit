@@ -134,7 +134,7 @@ if Plan::import 'exit'; then
             shift
         done
 
-        if [ "$1" != '0' ]; then
+        if [ "$code" != '0' ]; then
             Plan::proc.exit.print_errlog
             local show_log_dir_path
             [ -d "$PLAN__PATH_LOG" ] && [ "$PLAN__LOGGING_KEEP_LOGS" == 'true' ] \
