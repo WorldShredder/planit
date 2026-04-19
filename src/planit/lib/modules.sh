@@ -123,7 +123,8 @@ Plan::modules.get_config() {
 # Usage: modules.generate_state_hash SALT
 #
 # Generates a state hash from PLAN__STATE_ID, PLAN__MODULES members and an
-# optional salt.
+# optional salt. PLAN__MODULES member paths are converted to relative paths
+# to provide deterministic hashes regardless of installer location.
 #
 # Positional Args:
 #   SALT  Ideally, a deterministic value to add as a prefix before hashing.
@@ -133,7 +134,11 @@ Plan::modules.get_config() {
 #
 Plan::modules.generate_state_hash() {
     local salt="$1"
-    local state_id="${PLAN__STATE_ID}${PLAN__MODULES[*]}"
+    local modules_joined module
+    for module in "${PLAN__MODULES[@]}"; do
+        modules_joined+=${module#*"$PLAN__PATH_MODULES"}
+    done
+    local state_id="${PLAN__STATE_ID}${modules_joined}"
     [ -n "$state_id" ] \
         && Plan::utils.md5 "${salt}${state_id}"
 }
@@ -152,7 +157,7 @@ Plan::modules.generate_state_hash() {
 #
 Plan::modules.generate_module_hash() {
     # Relative module path to prevent losing state when moving install dir
-    local module="${1#*"${PLAN__PATH_MODULES}"/}"
+    local module="${1#*"$PLAN__PATH_MODULES"/}"
     Plan::modules.generate_state_hash "$module"
 }
 
