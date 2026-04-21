@@ -86,7 +86,7 @@ if Plan::import 'cleanup'; then
     }
 fi
 
-if Plan::import 'exit'; then
+if Plan::import --require 'print_errlog' -- 'exit'; then
     # Usage: proc.exit [OPTIONS ...] [CLEANUP_OPTS ...]
     #
     # Handle INT, TERM, HUP, QUIT and EXIT signals with cleanup step.
@@ -135,7 +135,7 @@ if Plan::import 'exit'; then
         done
 
         if [ "$code" != '0' ]; then
-            Plan::proc.exit.print_errlog
+            Plan::proc.print_errlog
             local show_log_dir_path
             [ -d "$PLAN__PATH_LOG" ] && [ "$PLAN__LOGGING_KEEP_LOGS" == 'true' ] \
                 && show_log_dir_path=" (see: '$PLAN__PATH_LOG')"
@@ -154,9 +154,17 @@ if Plan::import 'exit'; then
 
         exit "$code"
     }
+fi
 
-    # Usage: proc.exit.print_errlog [MESSAGE]
-    Plan::proc.exit.print_errlog() {
+if Plan::import 'print_errlog'; then
+    # Usage: proc.print_errlog [MESSAGER]
+    #
+    # Prints the last process error log or given MESSAGE as a formatted string.
+    #
+    # Positional Args:
+    #   MESSAGE  A message to print in-place of the process error log.
+    #
+    Plan::proc.print_errlog() {
         local message="${1:-$(cat "$PLAN__PATH_LOG_ERR" 2> /dev/null)}"
         if [ -n "$message" ]; then
             Plan::utils.hr '1:52' " $PLAN__PATH_LOG_ERR " >&2

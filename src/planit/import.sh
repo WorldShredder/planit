@@ -51,10 +51,18 @@ if ! command -v 'Plan::import' &> /dev/null; then
     #   MODULE  The module to check for under __NAMESPACE__.
     #
     # Args:
-    #   -o, --overwrite       Return 0 even if MODULE exists in environment. If
-    #                         not set, value of __OVERWRITE__ is used.
-    #   -n, --namespace NAME  The namespace to check under, otherwise namespace
-    #                         is value of __NAMESPACE__.
+    #   -o, --overwrite
+    #              Return 0 even if MODULE exists in environment. If not
+    #              set, value of __OVERWRITE__ is used.
+    #   -n, --namespace NAME
+    #              The namespace to check under, otherwise namespace is value
+    #              of __NAMESPACE__.
+    #   -r, --required REQUIRED
+    #              Comma-separated string of required inner-module functions.
+    #              This is necessary for module functions that all rely on the
+    #              same independent function within the module. Required
+    #              components extend the __C__ array and must be defined after
+    #              the component requiring them.
     #
     Plan::import() {
         local namespace="$__NAMESPACE__"
@@ -68,6 +76,17 @@ if ! command -v 'Plan::import' &> /dev/null; then
                     ;;
                 -o | --overwrite)
                     overwrite='true'
+                    ;;
+                -r | --require)
+                    # only extend components array when not importing all
+                    if [ "${#__C__[@]}" -gt 0 ]; then
+                        local required req
+                        IFS=, read -ra required <<< "$2"
+                        for req in "${required[@]}"; do
+                            __C__+=("$req")
+                        done
+                        shift
+                    fi
                     ;;
                 --)
                     shift
@@ -84,10 +103,12 @@ if ! command -v 'Plan::import' &> /dev/null; then
             && call_path+=".${module}"
 
         if command -v "$call_path" &> /dev/null; then
-            [ "$overwrite" != 'true' ] && return 1
+            [ "$overwrite" != 'true' ] \
+                && return 1
         fi
 
-        if [ -z "${__C__[*]}" ] || [ " ${__C__[*]} " == " $module " ]; then
+        # array expansion is safe here since IFS should never be in module name
+        if [ -z "${__C__[*]}" ] || [[ " ${__C__[*]} " == *" $module "* ]]; then
             return 0
         fi
 

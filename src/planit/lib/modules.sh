@@ -5,13 +5,14 @@
 source "${PLAN__PATH_ROOT}/lib/utils.sh" --component md5
 source "${PLAN__PATH_ROOT}/lib/logging.sh" --component logger
 
-# Usage: modules.fetch ARRAY_NAMEREF MODULES_PATH
+# Usage: modules.fetch ARRAY_NAMEREF MODULES_PATH [DEPTH]
 #
 # Populates an array with modules to execute.
 #
 # Positional Args:
 #   ARRAY_NAMEREF  The name of an array to populate with module paths.
 #   MODULES_PATH   Path to the directory containing modules to collect.
+#   DEPTH          The directory depth of the module; 0 if not set.
 #
 # Return:
 #   Exit code 1 on disallowed symlink
@@ -19,9 +20,10 @@ source "${PLAN__PATH_ROOT}/lib/logging.sh" --component logger
 Plan::modules.fetch() {
     local -n dest="$1"
     local src="$2"
+    local -i depth="${3:-0}"
     local path
     if [ -f "${path}/init.sh" ]; then
-        dest+=("${path}/init.sh")
+        dest+=("${depth}|${path}/init.sh")
         return
     fi
     for path in "$src"/*; do
@@ -30,9 +32,10 @@ Plan::modules.fetch() {
             return 1
         fi
         if [ -d "$path" ]; then
-            Plan::modules.fetch "$1" "$path"
+            dest+=("${depth}|${path}")
+            Plan::modules.fetch "$1" "$path" "$((depth + 1))"
         elif [[ "$path" == *.sh ]]; then
-            dest+=("$path")
+            dest+=("${depth}|${path}")
         fi
     done
     return 0

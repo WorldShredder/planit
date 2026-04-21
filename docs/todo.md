@@ -24,7 +24,7 @@
 
     - This can be accomplished by allowing some modules to be sourced into the main execution loop.
 
-    - Sourced modules must be of file type `.sh` (extension requirement TBD).
+    - Sourced modules must be of file type `.sh` or directory of `.sh` modules (extension requirement TBD).
 
     - Requires the entire execution loop be ran in a subshell to prevent main environment contamination.
 
@@ -60,11 +60,21 @@
 
     This will likely need something other than `yq`, e.g., **Python**. Require as little software as possible to use **Planit**.
 
+- [ ] Add options to disable/enable directory display in the event log.
+
 ### Logging & Reporting
 
 - [x] Implement general terminal logging functions.
 
 - [x] **Planit**-specific error should not lead to printing `err.log`.
+
+- [ ] We need proper debug logging for `import.sh`. This can be accomplished via several means:
+
+    1. Create an `import.sh`-specific logger which could plug into the `PLAN__LOGER_*` environment variables; not the most appealing solution.
+    
+    2. #1 but using `import.sh`-specific environment variables; maybe ideal given import logs can make parsing debug messages annoying.
+
+    3. Refactor `logging.sh` as a completely independant module; seems the most reasonable solution.
 
 - [ ] Handle requests on stdin (maybe?)
 

@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
+# shellcheck disable=SC1090,SC1091,SC2034
+
 PLAN__COLOR_SPINNER="${PLAN__COLOR_SPINNER:-'\033[38;5;75m'}"
 PLAN__COLOR_STEP_TITLE="${PLAN__COLOR_STEP_TITLE:-'\033[38;5;99m'}"
+
+source "${PLAN__PATH_ROOT}/lib/report.sh" --component status
 
 # Usage: monitor.start PID [ARGS ...]
 #
@@ -26,7 +30,7 @@ Plan::monitor.run() {
     return "$proc_code"
 }
 
-# Usage: monitor.loop PID LOG_PATH [TITLE] [SPINNER]
+# Usage: monitor.loop PID LOG_PATH [OPTIONS ...]
 #
 # Monitor a given PID and loop over process log entries from LOG_PATH.
 # This function consumes a single terminal line to print the latest log entry
@@ -35,9 +39,16 @@ Plan::monitor.run() {
 # Positional Args:
 #   PID       The process ID to monitor.
 #   LOG_PATH  Log file path to retrieve process logs from.
-#   TITLE     Title to display in the report loop's prefix.
-#   SPINNER   Space-separated string of spinner segments to iterate over
-#             while the loop is active. Displayed in front of TITLE.
+#
+# Options:
+#   -t, --title TITLE
+#             Module title to display after spinner.
+#   -d, --depth DEPTH
+#             Depth of current module. This is a multiplier for
+#             PLAN__MODULES_TAB_LEN.
+#   -s, --spinner SPINNER
+#             Space-separated string of spinner segments to iterate over while
+#             the loop is active. Displayed in front of -t|--title.
 #
 # Return:
 #   Exit code (1) on error.
@@ -45,13 +56,27 @@ Plan::monitor.run() {
 Plan::monitor.loop() {
     local proc_pid="$1"
     local log_path="$2"
-    local title="${3:-${PLAN__MODULE_TITLE:-Running Process}}"
+    shift 2
 
     [ -z "$proc_pid" ] &&
         return 1
 
+    local title="${PLAN__MODULE_TITLE:-Running Process}"
+    local -i depth=0
+    local spinner_str="${PLAN__ICON_SPINNER:-⡏ ⠟ ⠻ ⢹ ⣸ ⣴ ⣦ ⣇}"
+
+    while :; do
+        case "$1" in
+            -t|--title) title="$2"; shift;;
+            -d|--depth) depth="$2"; shift;;
+            -s|--spinner) spinner_str="$2"; shift;;
+            --) shift; break;;
+            *) break;;
+        esac
+        shift
+    done
+
     local -a spinner
-    local spinner_str="${4:-${PLAN__ICON_SPINNER:-⡏ ⠟ ⠻ ⢹ ⣸ ⣴ ⣦ ⣇}}"
     IFS=' ' read -ra spinner <<< "$spinner_str"
 
     # We need max spinner char len for prefix padding
@@ -63,7 +88,8 @@ Plan::monitor.loop() {
 
     # We need to get message prefix len for padding
     local -i pre_len
-    pre_len="$spin_len"+"${#title}"+2
+    local -i indent="$depth * $PLAN__MODULES_TAB_LEN"
+    pre_len="$indent + $spin_len + ${#title} + 2"
 
     local last _last
     while kill -0 "$proc_pid" 2>/dev/null; do
@@ -75,6 +101,7 @@ Plan::monitor.loop() {
                 last="$_last"
         fi
 
+        # TODO: truncate prefix if prefix exceeds term cols
         local -i delta
         delta="$(tput cols)"-"$pre_len"-"${#last}"
         (( delta < 0 )) &&
@@ -83,10 +110,16 @@ Plan::monitor.loop() {
         local -i spin_idx="${spin_idx:-0}"
         local spin_char="${spinner[$spin_idx]}"
 
-        printf "%b%-${spin_len}s %b%s %b%s" \
-            "$PLAN__COLOR_SPINNER"    "$spin_char" \
-            "$PLAN__COLOR_STEP_TITLE" "$title" \
-            "$PLAN__COLOR_STEP_LAST"  "$last"
+        # printf "%b%-${spin_len}s %b%s %b%s" \
+        #     "$PLAN__COLOR_SPINNER"    "$spin_char" \
+        #     "$PLAN__COLOR_STEP_TITLE" "$title" \
+        #     "$PLAN__COLOR_STEP_LAST"  "$last"
+
+        Plan::report.status \
+            "${spin_char}:${spin_len}" \
+            "$title" \
+            "$last" \
+            "$depth"
 
         spin_idx=(spin_idx+1)%"${#spinner[@]}"
         sleep 0.1

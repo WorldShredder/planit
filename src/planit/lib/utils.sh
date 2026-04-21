@@ -2,7 +2,7 @@
 
 # shellcheck disable=SC1090,SC1091,SC2034
 
-source "${PLAN__PATH_ROOT}/lib/logging.sh" -c logger
+source "${PLAN__PATH_ROOT}/lib/logging.sh" --component logger
 
 # Initialize module
 source "${PLAN__PATH_ROOT}/import.sh" Plan::utils "$@"
@@ -92,6 +92,7 @@ if Plan::import 'md5'; then
     #
     # Positional Args:
     #   INPUT  The input string to hash.
+    #
     Plan::utils.md5() {
         [ -z "$1" ] && return 1
         local res
@@ -106,6 +107,7 @@ if Plan::import 'sha1'; then
     #
     # Positional Args:
     #   INPUT  The input string to hash.
+    #
     Plan::utils.sha1() {
         [ -z "$1" ] && return 1
         local res
@@ -120,10 +122,30 @@ if Plan::import 'sha256'; then
     #
     # Positional Args:
     #   INPUT  The input string to hash.
+    #
     Plan::utils.sha256() {
         [ -z "$1" ] && return 1
         local res
         res="$(sha256sum <<< "$1")" && cut -d' ' -f1 <<< "$res"
+    }
+fi
+
+if Plan::import 'depth2indent'; then
+    # Usage: utils.depth2indent DEPTH TAB_LEN
+    #
+    # Calculates and prints N-spaced indentation based on some depth value and
+    # a given tab length (spaces per depth).
+    #
+    # Positional Args:
+    #   DEPTH    A multiplier that defines how my tabs are printed.
+    #   TAB_LEN  The number of spaces that defines a tab.
+    #
+    Plan::utils.depth2indent() {
+        local -i depth="$1"
+        local -i tab_len="$2"
+        local -i total="${depth} * ${tab_len}"
+        [ "$total" -gt 0 ] \
+            && printf "%-${total}s" ' '
     }
 fi
 
