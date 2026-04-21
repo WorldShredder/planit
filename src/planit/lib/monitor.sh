@@ -45,7 +45,7 @@ Plan::monitor.run() {
 #             Module title to display after spinner.
 #   -d, --depth DEPTH
 #             Depth of current module. This is a multiplier for
-#             PLAN__MODULES_TAB_LEN.
+#             PLAN__STATLOG_TAB_LEN.
 #   -s, --spinner SPINNER
 #             Space-separated string of spinner segments to iterate over while
 #             the loop is active. Displayed in front of -t|--title.
@@ -88,14 +88,14 @@ Plan::monitor.loop() {
 
     # We need to get message prefix len for padding
     local -i pre_len
-    local -i indent="$depth * $PLAN__MODULES_TAB_LEN"
+    local -i indent="$depth * $PLAN__STATLOG_TAB_LEN"
     pre_len="$indent + $spin_len + ${#title} + 2"
 
     local last _last
     while kill -0 "$proc_pid" 2>/dev/null; do
         tput cr el
 
-        if [ "$PLAN__LOGGING_GET_LAST" != 'false' ]; then
+        if [ "$PLAN__STATLOG_GET_LAST" != 'false' ]; then
             _last="$(tail -n1 "$log_path" 2>/dev/null || :)"
             [ -n "$_last" ] &&
                 last="$_last"

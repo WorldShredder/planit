@@ -20,7 +20,7 @@ if Plan::import 'ok'; then
         local title="$1"
         local -i depth="${2:-0}"
         Plan::utils.depth2indent \
-            "$depth" "$PLAN__MODULES_TAB_LEN"
+            "$depth" "$PLAN__STATLOG_TAB_LEN"
         printf '%b%s %b%s\033[0m\n' \
             "$PLAN__COLOR_STEP_OK" "$PLAN__ICON_STEP_OK" \
             "$PLAN__COLOR_STEP_TITLE" "$title"
@@ -40,7 +40,7 @@ if Plan::import 'fail'; then
         local title="$1"
         local -i depth="${2:-0}"
         Plan::utils.depth2indent \
-            "$depth" "$PLAN__MODULES_TAB_LEN"
+            "$depth" "$PLAN__STATLOG_TAB_LEN"
         printf '%b%s %b%s\033[0m\n' \
             "$PLAN__COLOR_STEP_FAIL" "$PLAN__ICON_STEP_FAIL" \
             "$PLAN__COLOR_STEP_TITLE" "$title"
@@ -68,7 +68,7 @@ if Plan::import 'status'; then
         local last="$3"
         local -i depth="${4:-0}"
         Plan::utils.depth2indent \
-            "$depth" "$PLAN__MODULES_TAB_LEN"
+            "$depth" "$PLAN__STATLOG_TAB_LEN"
         printf "%b%-${spin_len}s %b%s %b%s" \
             "$PLAN__COLOR_SPINNER" "$spin_char" \
             "$PLAN__COLOR_STEP_TITLE" "$title" \
@@ -89,9 +89,12 @@ if Plan::import 'dir'; then
         local title="$1"
         local -i depth="${2:-0}"
         Plan::utils.depth2indent \
-            "$depth" "$PLAN__MODULES_TAB_LEN"
-        printf '%b%s %b%s\033[0m\n' \
-            "$PLAN__COLOR_DIR" "$PLAN__ICON_DIR" \
+            "$depth" "$PLAN__STATLOG_TAB_LEN"
+        local icon=''
+        [ -n "$PLAN__ICON_DIR" ] \
+            && local icon="$PLAN__ICON_DIR "
+        printf '%b%s%b%s\033[0m\n' \
+            "$PLAN__COLOR_DIR" "$icon" \
             "$PLAN__COLOR_DIR_TITLE" "$title"
     }
 fi
