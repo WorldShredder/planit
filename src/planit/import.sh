@@ -1,17 +1,31 @@
 #!/usr/bin/env bash
 
-# Usage: source /path/to/module [OPTION ...]
+# Usage: source path/to/module [OPTION ...]
+#
+# Define new library modules with incremental import functionality. Provides
+# two functions -- Plan::import() and Plan::import.clean() -- to manage your
+# import environment.
+#
+# Positional Args:
+#   NAMESPACE  The namespace assigned to the module and used in the name of
+#              each module component, e.g., 'Plan::utils' in 'Plan::utils.md5'.
 #
 # Options
 #   -c, --component  Specify one or more components to source; comma-separated.
 #                    If no components are specified, all are imported.
 #   -o, --overwrite  Overwrite existing components; disabled by default.
 #
-# Initialization
+# Module Initialization
 #   source path/to/import.sh NAMESPACE
 #
-# Example
-#   source my/module.sh -c fn1,fn2,fn3 --overwrite
+# Module Components
+#   if Plan::import 'MyFunction'; then
+#       NameSpace.MyFunction() { echo 123; }
+#   fi
+#
+# Importing Components
+#   source my/module.sh --component MyFunction
+#
 
 __NAMESPACE__="$1"
 __OVERWRITE__='false'
@@ -37,7 +51,7 @@ while :; do
     shift
 done
 
-if ! command -v 'Plan::import' &> /dev/null; then
+if ! declare -F 'Plan::import' &> /dev/null; then
     # Usage: import [-o|--overwrite] [-n|--namespace NAME] [MODULE]
     #
     # Checks the current environment for a given function under __NAMESPACE__
@@ -102,7 +116,7 @@ if ! command -v 'Plan::import' &> /dev/null; then
         [ -n "$module" ] \
             && call_path+=".${module}"
 
-        if command -v "$call_path" &> /dev/null; then
+        if declare -F "$call_path" &> /dev/null; then
             [ "$overwrite" != 'true' ] \
                 && return 1
         fi

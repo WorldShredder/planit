@@ -50,17 +50,17 @@
 
     - [x] State file should contain hash of module's relative path for cleaner storage and to allow moving installer directory without losing state.
 
-- [ ] Recovery mode should print success status for each completed module.
+- [x] Recovery mode should print success status for each completed module.
 
 - [ ] Implement internal step recovery; this can be accomplished by exposing modules to an environment variable pointing to its own FIFO and a function to calculate an internal state hash.
 
 ### Configuration
 
+- [x] Add options to disable/enable directory display in the event log.
+
 - [ ] Optional configuration and planning through _yaml_ like **Ansible**.
 
     This will likely need something other than `yq`, e.g., **Python**. Require as little software as possible to use **Planit**.
-
-- [ ] Add options to disable/enable directory display in the event log.
 
 ### Logging & Reporting
 

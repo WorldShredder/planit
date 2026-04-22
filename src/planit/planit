@@ -102,7 +102,7 @@ Plan::modules.fetch PLAN__MODULES "$PLAN__PATH_MODULES" || exit 1
 #
 
 # The module index we must start at based on state
-declare -i init_module_idx=0
+declare -i restore_idx=0
 
 if [ "$PLAN__STATE_TRACK" == 'true' ]; then
     if [ -z "$PLAN__STATE_ID" ] || [ "$PLAN__STATE_HASH_ID" == 'true' ]; then
@@ -118,11 +118,11 @@ if [ "$PLAN__STATE_TRACK" == 'true' ]; then
         Plan::modules.save_state "${PLAN__MODULES[0]}" || exit 1
     else
         Plan::log.debug "State file found '$PLAN__STATE_PATH'"
-        if ! init_module_idx="$(Plan::modules.fetch_state_idx)"; then
+        if ! restore_idx="$(Plan::modules.fetch_state_idx)"; then
             Plan::log.error "Failed to fetch state from '$PLAN__STATE_PATH'"
             exit 1
-        elif [ "$init_module_idx" -gt '0' ]; then
-            Plan::log.info "Resume module $((init_module_idx + 1))/${#PLAN__MODULES[@]}"
+        elif [ "$restore_idx" -gt '0' ]; then
+            Plan::log.info "Resume module $((restore_idx + 1))/${#PLAN__MODULES[@]}"
         fi
     fi
 fi
@@ -133,24 +133,32 @@ fi
 
 source "${PLAN__PATH_ROOT}/lib/report.sh" --component ok,fail,dir
 
-for ((i = init_module_idx; i < "${#PLAN__MODULES[@]}"; i++)); do
+for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
     member="${PLAN__MODULES[$i]}"
     module="${member#*|}"
     depth="${member%%|*}"
 
     if [ -d "$module" ]; then
-        Plan::report.dir "$(Plan::modules.format_title "$module")" "$depth" || exit 1
+        if [ "$PLAN__STATLOG_SHOW_DIR" == 'true' ]; then
+            Plan::report.dir "$(Plan::modules.format_title "$module")" "$depth" || exit 1
+        fi
         continue
     fi
 
-    # Listeners closed after each module call
-    tee -a "$PLAN__PATH_LOG_ALL" > "$PLAN__PATH_LOG_OUT" < "$PLAN__PATH_FIFO_OUT" &
-    PLAN__PID_CACHE+=("$!")
-    tee -a "$PLAN__PATH_LOG_ALL" > "$PLAN__PATH_LOG_ERR" < "$PLAN__PATH_FIFO_ERR" &
-    PLAN__PID_CACHE+=("$!")
+    # Connect listeners to FIFOs only if we're actually going to write
+    skip_save_state='false'
+    if [ "$i" -ge "$restore_idx" ]; then
+        tee -a "$PLAN__PATH_LOG_ALL" > "$PLAN__PATH_LOG_OUT" < "$PLAN__PATH_FIFO_OUT" &
+        PLAN__PID_CACHE+=("$!")
+        tee -a "$PLAN__PATH_LOG_ALL" > "$PLAN__PATH_LOG_ERR" < "$PLAN__PATH_FIFO_ERR" &
+        PLAN__PID_CACHE+=("$!")
+    else
+        skip_save_state='true'
+    fi
 
-    # Source in subshell to maintain clean environment in parent
     (
+        # Apply Module Config
+
         config="$(Plan::modules.get_config "$module")" || exit 1
 
         [ -n "$config" ] \
@@ -167,6 +175,13 @@ for ((i = init_module_idx; i < "${#PLAN__MODULES[@]}"; i++)); do
             fi
         fi
 
+        if [ "$i" -lt "$restore_idx" ]; then
+            Plan::report.ok "$PLAN__MODULE_TITLE" "$depth"
+            exit 0
+        fi
+
+        # Execute Module
+
         declare -a cmd
         PLAN__MODULE_CMD="${PLAN__MODULE_CMD:-"$PLAN__MODULES_DEFAULT_CMD"}"
         [ -n "$PLAN__MODULE_CMD" ] \
@@ -176,8 +191,12 @@ for ((i = init_module_idx; i < "${#PLAN__MODULES[@]}"; i++)); do
             1> "$PLAN__PATH_FIFO_OUT" \
             2> "$PLAN__PATH_FIFO_ERR" &
 
+        # Monitor Execution
+
         Plan::monitor.run "$!" "$PLAN__PATH_LOG_ALL" --depth "$depth"
         exit_code="$?"
+
+        # Report status
 
         if ! Plan::utils.ok -i "$PLAN__IGNORE_CODES" "$exit_code"; then
             Plan::report.fail "$PLAN__MODULE_TITLE" "$depth"
@@ -187,8 +206,8 @@ for ((i = init_module_idx; i < "${#PLAN__MODULES[@]}"; i++)); do
         Plan::report.ok "$PLAN__MODULE_TITLE" "$depth"
     ) || exit "$?"
 
-    # Update state file here to empty it on last module
-    Plan::modules.save_state "${PLAN__MODULES[$((i + 1))]}"
+    [ "$skip_save_state" != 'true' ] \
+        && Plan::modules.save_state "${PLAN__MODULES[$((i + 1))]}"
 done
 
 exit 0

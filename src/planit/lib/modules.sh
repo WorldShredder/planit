@@ -32,6 +32,10 @@ Plan::modules.fetch() {
             return 1
         fi
         if [ -d "$path" ]; then
+            # Handle this in main execution loop to localize how we deal with
+            # module indexe display.
+            # [ "$PLAN__STATLOG_SHOW_DIR" == 'true' ] \
+            #     && dest+=("${depth}|${path}")
             dest+=("${depth}|${path}")
             Plan::modules.fetch "$1" "$path" "$((depth + 1))"
         elif [[ "$path" == *.sh ]]; then
