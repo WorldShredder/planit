@@ -92,10 +92,7 @@ PLAN__FILE_CACHE+=("$PLAN__PATH_FIFO")
 
 source "${PLAN__PATH_ROOT}/lib/monitor.sh"
 source "${PLAN__PATH_ROOT}/lib/modules.sh"
-tput civis # Cursor reset by error handler
-
-declare -a PLAN__MODULES
-Plan::modules.fetch PLAN__MODULES "$PLAN__PATH_MODULES" || exit 1
+Plan::modules.fetch "$PLAN__PATH_MODULES" || exit 1
 
 #
 # Installer State
@@ -132,6 +129,7 @@ fi
 #
 
 source "${PLAN__PATH_ROOT}/lib/report.sh" --component ok,fail,dir
+tput civis # Cursor reset by error handler
 
 for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
     member="${PLAN__MODULES[$i]}"

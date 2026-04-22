@@ -5,12 +5,11 @@
 source "${PLAN__PATH_ROOT}/lib/utils.sh" --component md5
 source "${PLAN__PATH_ROOT}/lib/logging.sh" --component logger
 
-# Usage: modules.fetch ARRAY_NAMEREF MODULES_PATH [DEPTH]
+# Usage: modules.fetch MODULES_PATH [DEPTH]
 #
 # Populates an array with modules to execute.
 #
 # Positional Args:
-#   ARRAY_NAMEREF  The name of an array to populate with module paths.
 #   MODULES_PATH   Path to the directory containing modules to collect.
 #   DEPTH          The directory depth of the module; 0 if not set.
 #
@@ -18,12 +17,15 @@ source "${PLAN__PATH_ROOT}/lib/logging.sh" --component logger
 #   Exit code 1 on disallowed symlink
 #
 Plan::modules.fetch() {
-    local -n dest="$1"
-    local src="$2"
-    local -i depth="${3:-0}"
+    local src="$1"
+    local -i depth="${2:-0}"
+
+    [ -z "${PLAN__MODULES:++}" ] \
+        && PLAN__MODULES=()
+
     local path
     if [ -f "${path}/init.sh" ]; then
-        dest+=("${depth}|${path}/init.sh")
+        PLAN__MODULES+=("${depth}|${path}/init.sh")
         return
     fi
     for path in "$src"/*; do
@@ -32,14 +34,10 @@ Plan::modules.fetch() {
             return 1
         fi
         if [ -d "$path" ]; then
-            # Handle this in main execution loop to localize how we deal with
-            # module indexe display.
-            # [ "$PLAN__STATLOG_SHOW_DIR" == 'true' ] \
-            #     && dest+=("${depth}|${path}")
-            dest+=("${depth}|${path}")
-            Plan::modules.fetch "$1" "$path" "$((depth + 1))"
+            PLAN__MODULES+=("${depth}|${path}")
+            Plan::modules.fetch "$path" "$((depth + 1))"
         elif [[ "$path" == *.sh ]]; then
-            dest+=("${depth}|${path}")
+            PLAN__MODULES+=("${depth}|${path}")
         fi
     done
     return 0
