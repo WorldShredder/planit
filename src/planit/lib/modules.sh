@@ -5,6 +5,9 @@
 source "${PLAN__PATH_ROOT}/lib/utils.sh" --component md5
 source "${PLAN__PATH_ROOT}/lib/logging.sh" --component logger
 
+# Globals
+declare -i PLAN__NUM_MODULES
+
 # Usage: modules.fetch MODULES_PATH [DEPTH]
 #
 # Populates an array with modules to execute.
@@ -25,6 +28,7 @@ Plan::modules.fetch() {
 
     local path
     if [ -f "${path}/init.sh" ]; then
+        PLAN__NUM_MODULES+=1
         PLAN__MODULES+=("${depth}|${path}/init.sh")
         return
     fi
@@ -37,9 +41,11 @@ Plan::modules.fetch() {
             PLAN__MODULES+=("${depth}|${path}")
             Plan::modules.fetch "$path" "$((depth + 1))"
         elif [[ "$path" == *.sh ]]; then
+            PLAN__NUM_MODULES+=1
             PLAN__MODULES+=("${depth}|${path}")
         fi
     done
+
     return 0
 }
 
@@ -219,4 +225,26 @@ Plan::modules.fetch_state_idx() {
         fi
     done
     printf '%d' "$state_idx"
+}
+
+# Usage: modules.fetch_rel_idx MODULE
+#
+# Fetch the module's index relative to the number of modules. This function
+# is necessary since PLAN__MODULES contains directories as well.
+#
+# Positional Args:
+#   MODULE  The module from PLAN__MODULES to get the index of.
+#
+Plan::modules.fetch_rel_idx() {
+    local module="$1"
+    local -i idx=0
+    local m _ path
+    for m in "${PLAN__MODULES[@]}"; do
+        IFS=\| read -r _ path <<< "$m"
+        ! [ -d "$path" ] \
+            && idx+=1
+        [ "$m" == "$module" ] \
+            && break
+    done
+    printf '%d' "$idx"
 }

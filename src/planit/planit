@@ -101,6 +101,9 @@ Plan::modules.fetch "$PLAN__PATH_MODULES" || exit 1
 # The module index we must start at based on state
 declare -i restore_idx=0
 
+# The module's index relative to num modules
+declare -i module_idx=0
+
 if [ "$PLAN__STATE_TRACK" == 'true' ]; then
     if [ -z "$PLAN__STATE_ID" ] || [ "$PLAN__STATE_HASH_ID" == 'true' ]; then
         if ! PLAN__STATE_HASH="$(Plan::modules.generate_state_hash)"; then
@@ -119,7 +122,10 @@ if [ "$PLAN__STATE_TRACK" == 'true' ]; then
             Plan::log.error "Failed to fetch state from '$PLAN__STATE_PATH'"
             exit 1
         elif [ "$restore_idx" -gt '0' ]; then
-            Plan::log.info "Resume module $((restore_idx + 1))/${#PLAN__MODULES[@]}"
+            _module_idx="$(
+                Plan::modules.fetch_idx "${PLAN__MODULES[$restore_idx]}"
+            )"
+            Plan::log.info "Resume module ${_module_idx}/${PLAN__NUM_MODULES}"
         fi
     fi
 fi
@@ -142,6 +148,8 @@ for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
         fi
         continue
     fi
+
+    module_idx+=1
 
     # Connect listeners to FIFOs only if we're actually going to write
     skip_save_state='false'
@@ -171,6 +179,19 @@ for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
                 fi
                 PLAN__MODULE_TITLE="$PLAN__MODULES_DEFAULT_TITLE (#$((i + 1)))"
             fi
+        fi
+
+        if [ "$PLAN__STATLOG_SHOW_INDEX" == 'true' ]; then
+            PLAN__MODULE_TITLE+="$(
+                printf ' %b(%b%d%b/%b%d%b)' \
+                    "$PLAN__COLORS_STATLOG_INDEX_SEP" \
+                    "$PLAN__COLORS_STATLOG_INDEX_L" \
+                    "$module_idx" \
+                    "$PLAN__COLORS_STATLOG_INDEX_SEP" \
+                    "$PLAN__COLORS_STATLOG_INDEX_R" \
+                    "$PLAN__NUM_MODULES" \
+                    "$PLAN__COLORS_STATLOG_INDEX_SEP"
+            )"
         fi
 
         if [ "$i" -lt "$restore_idx" ]; then
