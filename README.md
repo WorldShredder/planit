@@ -1,5 +1,6 @@
-<h1 align=center>Planit 🪐</h1>
-<h3 align=center>Modular Installer Framework</h3>
+<div align=center>
+    <img src='../assets/logo.png' />
+</div>
 <br>
 
 **Planit** is a lightweight, modular Bash4 installer framework for Linux that simplifies multi-step software installation workflows without runtime dependencies. Designed for developers who need to ship self-contained installers with minimal overhead -- all modules are executed through a single framework that adds negligible size to your release.
@@ -19,6 +20,12 @@
 - Support user inputs over _stdin_ or advanced workflows like parallel execution (for now), rollback functionality, or testing and validation frameworks
 
 - Handle pre-installation dependencies before the framework runs (you manage bootstrapping in your modules)
+
+## Demo
+
+<div align=center>
+    <img src='../assets/demo.gif' />
+</div>
 
 ## Getting Started
 
