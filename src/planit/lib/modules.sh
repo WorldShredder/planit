@@ -1,12 +1,26 @@
 #!/usr/bin/env bash
-
 # shellcheck disable=SC1090,SC1091,SC2034
+
+#
+# Dependencies
+#
 
 source "${PLAN__PATH_ROOT}/lib/utils.sh" --component md5
 source "${PLAN__PATH_ROOT}/lib/logging.sh" --component logger
 
+#
 # Globals
+#
+
+# Number of executable modules in PLAN__MODULES[] array
 declare -i PLAN__NUM_MODULES
+
+# Stores the module index relative to the value of PLAN__NUM_MODULES
+declare -i PLAN__MODULE_INDEX
+
+#
+# Library
+#
 
 # Usage: modules.fetch MODULES_PATH [DEPTH]
 #

@@ -1,11 +1,18 @@
 #!/usr/bin/env bash
-
 # shellcheck disable=SC1090,SC1091,SC2034
+
+#
+# Dependencies
+#
 
 PLAN__COLOR_SPINNER="${PLAN__COLOR_SPINNER:-'\033[38;5;75m'}"
 PLAN__COLOR_STEP_TITLE="${PLAN__COLOR_STEP_TITLE:-'\033[38;5;99m'}"
 
 source "${PLAN__PATH_ROOT}/lib/report.sh" --component status
+
+#
+# Library
+#
 
 # Usage: monitor.start PID [ARGS ...]
 #
@@ -79,18 +86,32 @@ Plan::monitor.loop() {
     local -a spinner
     IFS=' ' read -ra spinner <<< "$spinner_str"
 
-    # We need max spinner char len for prefix padding
+    # Num spaces between elements
+    local -i spacing=2
+
+    # Max spinner length
     local c
     local -i spin_len=0
     for c in "${spinner[@]}"; do
         (( ${#c} > spin_len )) && spin_len="${#c}"
     done
 
-    # We need to get message prefix len for padding
+    # Module index length
+    local -i index_len=0
+    if [ "$PLAN__STATLOG_SHOW_INDEX" = 'true' ]; then
+        index_len+="${#PLAN__NUM_MODULES} * 2"
+        index_len+="${#PLAN__STATLOG_INDEX_BRACKET_L}"
+        index_len+="${#PLAN__STATLOG_INDEX_DIVIDER}"
+        index_len+="${#PLAN__STATLOG_INDEX_BRACKET_R}"
+        spacing+=1
+    fi
+
+    # Total prefix length
     local -i pre_len
     local -i indent="$depth * $PLAN__STATLOG_TAB_LEN"
-    pre_len="$indent + $spin_len + ${#title} + 2"
+    pre_len="$indent + $spin_len + $index_len + ${#title} + $spacing"
 
+    # Main report loop
     local last _last
     while kill -0 "$proc_pid" 2>/dev/null; do
         tput cr el
@@ -101,7 +122,7 @@ Plan::monitor.loop() {
                 last="$_last"
         fi
 
-        # TODO: truncate prefix if prefix exceeds term cols
+        # TODO: move truncate to report.status() on whole message
         local -i delta
         delta="$(tput cols)"-"$pre_len"-"${#last}"
         (( delta < 0 )) &&
@@ -109,11 +130,6 @@ Plan::monitor.loop() {
 
         local -i spin_idx="${spin_idx:-0}"
         local spin_char="${spinner[$spin_idx]}"
-
-        # printf "%b%-${spin_len}s %b%s %b%s" \
-        #     "$PLAN__COLOR_SPINNER"    "$spin_char" \
-        #     "$PLAN__COLOR_STEP_TITLE" "$title" \
-        #     "$PLAN__COLOR_STEP_LAST"  "$last"
 
         Plan::report.status \
             "${spin_char}:${spin_len}" \

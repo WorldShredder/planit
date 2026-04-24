@@ -1,13 +1,19 @@
 #!/usr/bin/env bash
-
 # shellcheck disable=SC1090,SC1091,SC2034
+
+#
+# Dependencies
+#
 
 source "${PLAN__PATH_ROOT}/lib/utils.sh" --component depth2indent
 
-# Initialize module
+#
+# Library
+#
+
 source "${PLAN__PATH_ROOT}/import.sh" Plan::report "$@"
 
-if Plan::import 'ok'; then
+if Plan::import --require 'format_index' -- 'ok'; then
     # Usage: report.ok TITLE [DEPTH]
     #
     # Prints the success status message to the event log.
@@ -21,13 +27,18 @@ if Plan::import 'ok'; then
         local -i depth="${2:-0}"
         Plan::utils.depth2indent \
             "$depth" "$PLAN__STATLOG_TAB_LEN"
-        printf '%b%s %b%s\033[0m\n' \
-            "$PLAN__COLOR_STEP_OK" "$PLAN__ICON_STEP_OK" \
+        printf '%b%s' \
+            "$PLAN__COLOR_STEP_OK" "$PLAN__ICON_STEP_OK"
+        if [ "$PLAN__STATLOG_SHOW_INDEX" = 'true' ]; then
+            [ "$PLAN__STATLOG_STICKY_INDEX" = 'true' ] \
+                && Plan::report.format_index
+        fi
+        printf ' %b%s\033[0m\n' \
             "$PLAN__COLOR_STEP_TITLE" "$title"
     }
 fi
 
-if Plan::import 'fail'; then
+if Plan::import --require 'format_index' -- 'fail'; then
     # Usage: report.fail TITLE [DEPTH]
     #
     # Prints the failure status message to the event log.
@@ -41,13 +52,18 @@ if Plan::import 'fail'; then
         local -i depth="${2:-0}"
         Plan::utils.depth2indent \
             "$depth" "$PLAN__STATLOG_TAB_LEN"
-        printf '%b%s %b%s\033[0m\n' \
-            "$PLAN__COLOR_STEP_FAIL" "$PLAN__ICON_STEP_FAIL" \
+        printf '%b%s' \
+            "$PLAN__COLOR_STEP_FAIL" "$PLAN__ICON_STEP_FAIL"
+        if [ "$PLAN__STATLOG_SHOW_INDEX" = 'true' ]; then
+            [ "$PLAN__STATLOG_STICKY_INDEX" = 'true' ] \
+                && Plan::report.format_index
+        fi
+        printf ' %b%s\033[0m\n' \
             "$PLAN__COLOR_STEP_TITLE" "$title"
     }
 fi
 
-if Plan::import 'status'; then
+if Plan::import --require 'format_index' -- 'status'; then
     # Usage: report.status SPIN_CHAR TITLE [LAST] [DEPTH]
     #
     # Prints the given status line of a (presumably) running module.
@@ -67,11 +83,16 @@ if Plan::import 'status'; then
         local title="$2"
         local last="$3"
         local -i depth="${4:-0}"
+
         Plan::utils.depth2indent \
             "$depth" "$PLAN__STATLOG_TAB_LEN"
-        printf "%b%-${spin_len}s %b%s %b%s" \
-            "$PLAN__COLOR_SPINNER" "$spin_char" \
-            "$PLAN__COLOR_STEP_TITLE" "$title" \
+        printf "%b%-${spin_len}s" \
+            "$PLAN__COLOR_SPINNER" "$spin_char"
+        [ "$PLAN__STATLOG_SHOW_INDEX" = 'true' ] \
+            && Plan::report.format_index
+        printf ' %b%s' \
+            "$PLAN__COLOR_STEP_TITLE" "$title"
+        printf ' %b%s\033[0m' \
             "$PLAN__COLOR_STEP_LAST" "$last"
     }
 fi
@@ -96,6 +117,26 @@ if Plan::import 'dir'; then
         printf '%b%s%b%s\033[0m\n' \
             "$PLAN__COLOR_DIR" "$icon" \
             "$PLAN__COLOR_DIR_TITLE" "$title"
+    }
+fi
+
+if Plan::import 'format_index'; then
+    # Usage: report.format_index
+    #
+    # Formats and prints the current index without a newline.
+    #
+    Plan::report.format_index() {
+        printf " %b%s%b%+${#PLAN__NUM_MODULES}s%b%s%b%s%b%s" \
+            "$PLAN__COLOR_STATLOG_INDEX_BRACKET" \
+            "$PLAN__STATLOG_INDEX_BRACKET_L" \
+            "$PLAN__COLOR_STATLOG_INDEX_L" \
+            "$PLAN__MODULE_INDEX" \
+            "$PLAN__COLOR_STATLOG_INDEX_DIVIDER" \
+            "$PLAN__STATLOG_INDEX_DIVIDER" \
+            "$PLAN__COLOR_STATLOG_INDEX_R" \
+            "$PLAN__NUM_MODULES" \
+            "$PLAN__COLOR_STATLOG_INDEX_BRACKET" \
+            "$PLAN__STATLOG_INDEX_BRACKET_R"
     }
 fi
 

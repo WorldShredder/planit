@@ -58,11 +58,15 @@ if ! declare -F 'Plan::import' &> /dev/null; then
     # and returns non-zero exit code if function exists, unless -o|--overwrite
     # is set or __OVERWRITE__ is 'true'.
     #
-    # If an array __C__ exists and is non-empty, import() will return `0` if
-    # MODULE can be found in the array, otherwise return `1`.
+    # If an array __C__ exists and is non-empty, import() will return '0' if
+    # MODULE can be found in the array, otherwise return '1'.
     #
     # Positional Args:
-    #   MODULE  The module to check for under __NAMESPACE__.
+    #   MODULE  The module to check for under __NAMESPACE__. If MODULE starts
+    #           with an '&', the module is considered a module group, where
+    #           everything after the '&' is the group identifier. In this mode
+    #           import() will declare a function with an fname of identifier
+    #           under __NAMESPACE__ if it does not already exist.
     #
     # Args:
     #   -o, --overwrite
@@ -99,8 +103,8 @@ if ! declare -F 'Plan::import' &> /dev/null; then
                         for req in "${required[@]}"; do
                             __C__+=("$req")
                         done
-                        shift
                     fi
+                    shift
                     ;;
                 --)
                     shift
@@ -113,19 +117,36 @@ if ! declare -F 'Plan::import' &> /dev/null; then
 
         local module="$1"
         local call_path="$namespace"
-        [ -n "$module" ] \
-            && call_path+=".${module}"
+        if [ "${module::1}" = '&' ]; then
+            ! [[ "${module:1}" =~ ^[a-zA-Z0-9\._]+$ ]] \
+                && return 1
+            call_path+=".${module:1}"
+        elif [ -n "$module" ]; then
+            call_path+=".${module}"
+        fi
 
         if declare -F "$call_path" &> /dev/null; then
-            [ "$overwrite" != 'true' ] \
-                && return 1
+            if [ "$overwrite" != 'true' ]; then
+                ## DEBUG
+                # printf '\033[31m[DEBUG] import: %-20s %-20s %-50s <= %s\033[0m\n' \
+                #     'Skipping' "$module" "$call_path" "${FUNCNAME[*]}"
+                return 1
+            fi
         fi
 
         # array expansion is safe here since IFS should never be in module name
         if [ -z "${__C__[*]}" ] || [[ " ${__C__[*]} " == *" $module "* ]]; then
+            [ "${module::1}" = '&' ] \
+                && eval "function $call_path { :; }"
+            ## DEBUG
+            # printf '\033[32m[DEBUG] import: %-20s %-20s %-50s <= %s\033[0m\n' \
+            #     'Importing' "$module" "$call_path" "${FUNCNAME[*]}"
             return 0
         fi
 
+        ## DEBUG
+        # printf '\033[33m[DEBUG] import: %-20s %-20s %-50s <= %s\033[0m\n' \
+        #     'Ignoring' "$module" "$call_path" "${FUNCNAME[*]}"
         return 1
     }
 

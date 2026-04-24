@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
-
 # shellcheck disable=SC1090,SC1091,SC2034
+
+#
+# Dependencies
+#
 
 source "${PLAN__PATH_ROOT}/lib/logging.sh" --component logger
 source "${PLAN__PATH_ROOT}/lib/utils.sh" --component hr
 
-# Initialize module
+#
+# Library
+#
+
 source "${PLAN__PATH_ROOT}/import.sh" Plan::proc "$@"
 
 if Plan::import 'cleanup'; then
@@ -143,7 +149,7 @@ if Plan::import --require 'print_errlog' -- 'exit'; then
             Plan::log.error "${message}${show_log_dir_path}"
         fi
 
-        if command -v "$cleanup" &> /dev/null; then
+        if declare -F "$cleanup" &> /dev/null; then
             "$cleanup" "$@" || true
         else
             Plan::log.warn "Undefined cleanup method '$cleanup'"
