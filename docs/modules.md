@@ -1,5 +1,5 @@
 <div align=center>
-    <img src='../assets/logo.png' />
+    <img src='/../assets/logo.png' />
 </div>
 <h3 align=center>Installer Modules</h3>
 <br>
