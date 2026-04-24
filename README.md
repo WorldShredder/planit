@@ -47,11 +47,12 @@ MyInstaller
 │   │   └── 30_post_install/
 │   │       ├── 10_[Update_RC_Config].sh
 │   │       └── 20_cleaning_up.sh
-│   └── 30_verify_installation.sh
+│   ├── 30_verify_installation.sh
+│   └── 40_final_steps.sh
 └── planit.conf
 ```
 
-#### Installer Setup
+### Installer Setup
 
 1. Clone the repository
 
@@ -98,10 +99,20 @@ MyInstaller
     chmod +x MyInstaller/install
     ```
 
-#### Installer Execution
+### Installer Execution
 
 Installation can be initiated by simply executing the main install script
 
 ```sh
 bash MyInstaller/install
 ```
+
+## Documentation
+
+- #### [Creating Modules](docs/modules.md)
+
+- #### [Module Naming Convention](docs/naming-convention.md)
+
+- #### [Configuration & Customization](docs/configuration.md)
+
+
