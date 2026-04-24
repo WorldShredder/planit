@@ -82,6 +82,8 @@
 
 - [ ] Add more debug logs.
 
+- [ ] Handle truncating on entire status message string in `report.status()`. Current method in `monitor.sh` doesn't account for long module titles.
+
 ### User Interface
 
 - [ ] Implement a `ui.sh` library for drawing padded boxes and containers.

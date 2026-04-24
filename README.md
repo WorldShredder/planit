@@ -25,21 +25,22 @@
 Example installation directory:
 
 ```
-MyInstaller/
+MyInstaller
 ├── install
-├── modules/
+├── modules
 │   ├── 10_bootstrap/
 │   │   ├── 10_update_package_repositories.sh
 │   │   ├── 20_install_dependencies.sh
 │   │   └── 30_configure_dependencies.sh
-│   ├── 20_pre_install/
-│   │   ├── 10_download_source_pkg.sh
-│   │   └── 20_[Make_LCP-v1.x_Binary].sh
-│   ├── 30_[Install_LCP-v1.x].sh
-│   ├── 40_post_install/
-│   │   ├── 10_[Update_RC_Config].sh
-│   │   └── 20_cleaning_up.sh
-│   └── 50_verify_installation.sh
+│   ├── 20_install/
+│   │   ├── 10_pre_install/
+│   │   │   ├── 10_download_source_pkg.sh
+│   │   │   └── 20_[Make_LCP-v1.x_Binary].sh
+│   │   ├── 20_[Install_LCP-v1.x].sh
+│   │   └── 30_post_install/
+│   │       ├── 10_[Update_RC_Config].sh
+│   │       └── 20_cleaning_up.sh
+│   └── 30_verify_installation.sh
 └── planit.conf
 ```
 

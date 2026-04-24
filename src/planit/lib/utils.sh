@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
-
 # shellcheck disable=SC1090,SC1091,SC2034
+
+#
+# Dependencies
+#
 
 source "${PLAN__PATH_ROOT}/lib/logging.sh" --component logger
 
-# Initialize module
+#
+# Library
+#
+
 source "${PLAN__PATH_ROOT}/import.sh" Plan::utils "$@"
 
 if Plan::import 'ok'; then
