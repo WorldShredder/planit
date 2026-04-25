@@ -92,7 +92,7 @@ if Plan::import --require 'format_index' -- 'status'; then
             && Plan::report.format_index
         printf ' %b%s' \
             "$PLAN__COLOR_STEP_TITLE" "$title"
-        printf ' %b%s\033[0m' \
+        printf ' %b%s\033[0m\r' \
             "$PLAN__COLOR_STEP_LAST" "$last"
     }
 fi
