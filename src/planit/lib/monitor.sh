@@ -5,9 +5,6 @@
 # Dependencies
 #
 
-PLAN__COLOR_SPINNER="${PLAN__COLOR_SPINNER:-'\033[38;5;75m'}"
-PLAN__COLOR_STEP_TITLE="${PLAN__COLOR_STEP_TITLE:-'\033[38;5;99m'}"
-
 source "${PLAN__PATH_ROOT}/lib/report.sh" --component status
 
 #
@@ -70,7 +67,7 @@ Plan::monitor.loop() {
 
     local title="${PLAN__MODULE_TITLE:-Running Process}"
     local -i depth=0
-    local spinner_str="${PLAN__ICON_SPINNER:-⡏ ⠟ ⠻ ⢹ ⣸ ⣴ ⣦ ⣇}"
+    local spinner_str="${PLAN__ICON_SPINNER:-'\ \ | | / / - -'}"
 
     while :; do
         case "$1" in
