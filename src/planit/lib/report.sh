@@ -5,7 +5,7 @@
 # Dependencies
 #
 
-source "${PLAN__PATH_ROOT}/lib/utils.sh" --component depth2indent
+source "${PLAN__PATH_ROOT}/lib/utils.sh" --component depth2indent,+color
 
 #
 # Library
@@ -25,16 +25,17 @@ if Plan::import --require 'format_index' -- 'ok'; then
     Plan::report.ok() {
         local title="$1"
         local -i depth="${2:-0}"
+        local icon="${PLAN__STATLOG_OK_ICON::1}"
         Plan::utils.depth2indent \
             "$depth" "$PLAN__STATLOG_TAB_LEN"
         printf '%b%s' \
-            "$PLAN__COLOR_STEP_OK" "$PLAN__ICON_STEP_OK"
+            "${PLAN__FG//@/$PLAN__STATLOG_OK_COLOR}" "$icon"
         if [ "$PLAN__STATLOG_SHOW_INDEX" = 'true' ]; then
             [ "$PLAN__STATLOG_STICKY_INDEX" = 'true' ] \
                 && Plan::report.format_index
         fi
         printf ' %b%s\033[0m\n' \
-            "$PLAN__COLOR_STEP_TITLE" "$title"
+            "${PLAN__FG//@/$PLAN__STATLOG_TITLE_COLOR}" "$title"
     }
 fi
 
@@ -50,16 +51,17 @@ if Plan::import --require 'format_index' -- 'fail'; then
     Plan::report.fail() {
         local title="$1"
         local -i depth="${2:-0}"
+        local icon="${PLAN__STATLOG_FAIL_ICON::1}"
         Plan::utils.depth2indent \
             "$depth" "$PLAN__STATLOG_TAB_LEN"
         printf '%b%s' \
-            "$PLAN__COLOR_STEP_FAIL" "$PLAN__ICON_STEP_FAIL"
+            "${PLAN__FG//@/$PLAN__STATLOG_FAIL_COLOR}" "$icon"
         if [ "$PLAN__STATLOG_SHOW_INDEX" = 'true' ]; then
             [ "$PLAN__STATLOG_STICKY_INDEX" = 'true' ] \
                 && Plan::report.format_index
         fi
         printf ' %b%s\033[0m\n' \
-            "$PLAN__COLOR_STEP_TITLE" "$title"
+            "${PLAN__FG//@/$PLAN__STATLOG_TITLE_COLOR}" "$title"
     }
 fi
 
@@ -87,13 +89,13 @@ if Plan::import --require 'format_index' -- 'status'; then
         Plan::utils.depth2indent \
             "$depth" "$PLAN__STATLOG_TAB_LEN"
         printf "%b%-${spin_len}s" \
-            "$PLAN__COLOR_SPINNER" "$spin_char"
+            "${PLAN__FG//@/$PLAN__STATLOG_SPINNER_COLOR}" "$spin_char"
         [ "$PLAN__STATLOG_SHOW_INDEX" = 'true' ] \
             && Plan::report.format_index
         printf ' %b%s' \
-            "$PLAN__COLOR_STEP_TITLE" "$title"
+            "${PLAN__FG//@/$PLAN__STATLOG_TITLE_COLOR}" "$title"
         printf ' %b%s\033[0m\r' \
-            "$PLAN__COLOR_STEP_LAST" "$last"
+            "${PLAN__FG//@/$PLAN__STATLOG_TAIL_COLOR}" "$last"
     }
 fi
 
@@ -112,11 +114,11 @@ if Plan::import 'dir'; then
         Plan::utils.depth2indent \
             "$depth" "$PLAN__STATLOG_TAB_LEN"
         local icon=''
-        [ -n "$PLAN__ICON_DIR" ] \
-            && local icon="$PLAN__ICON_DIR "
+        [ -n "$PLAN__STATLOG_DIR_ICON" ] \
+            && local icon="${PLAN__STATLOG_DIR_ICON::1} "
         printf '%b%s%b%s\033[0m\n' \
-            "$PLAN__COLOR_DIR" "$icon" \
-            "$PLAN__COLOR_DIR_TITLE" "$title"
+            "${PLAN__FG//@/$PLAN__STATLOG_DIR_COLOR}" "$icon" \
+            "${PLAN__FG//@/$PLAN__STATLOG_DIR_TITLE_COLOR}" "$title"
     }
 fi
 
@@ -127,15 +129,15 @@ if Plan::import 'format_index'; then
     #
     Plan::report.format_index() {
         printf " %b%s%b%+${#PLAN__NUM_MODULES}s%b%s%b%s%b%s" \
-            "$PLAN__COLOR_STATLOG_INDEX_BRACKET" \
+            "${PLAN__FG//@/$PLAN__STATLOG_INDEX_BRACKET_COLOR}" \
             "$PLAN__STATLOG_INDEX_BRACKET_L" \
-            "$PLAN__COLOR_STATLOG_INDEX_L" \
+            "${PLAN__FG//@/$PLAN__STATLOG_INDEX_L_COLOR}" \
             "$PLAN__MODULE_INDEX" \
-            "$PLAN__COLOR_STATLOG_INDEX_DIVIDER" \
+            "${PLAN__FG//@/$PLAN__STATLOG_INDEX_DIVIDER_COLOR}" \
             "$PLAN__STATLOG_INDEX_DIVIDER" \
-            "$PLAN__COLOR_STATLOG_INDEX_R" \
+            "${PLAN__FG//@/$PLAN__STATLOG_INDEX_R_COLOR}" \
             "$PLAN__NUM_MODULES" \
-            "$PLAN__COLOR_STATLOG_INDEX_BRACKET" \
+            "${PLAN__FG//@/$PLAN__STATLOG_INDEX_BRACKET_COLOR}" \
             "$PLAN__STATLOG_INDEX_BRACKET_R"
     }
 fi

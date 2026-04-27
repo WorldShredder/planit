@@ -6,7 +6,7 @@
 #
 
 source "${PLAN__PATH_ROOT}/lib/logging.sh" --component logger
-source "${PLAN__PATH_ROOT}/lib/utils.sh" --component hr
+source "${PLAN__PATH_ROOT}/lib/utils.sh" --component hr,+color
 
 #
 # Library
@@ -143,7 +143,7 @@ if Plan::import --require 'print_errlog' -- 'exit'; then
         if [ "$code" != '0' ]; then
             Plan::proc.print_errlog
             local show_log_dir_path
-            [ -d "$PLAN__PATH_LOG" ] && [ "$PLAN__LOGGING_KEEP_LOGS" == 'true' ] \
+            [ -d "$PLAN__PATH_LOG" ] && [ "$PLAN__MODULES_LOG_KEEP" == 'true' ] \
                 && show_log_dir_path=" (see: '$PLAN__PATH_LOG')"
             local message="Planit failed with exit code '$code'"
             Plan::log.error "${message}${show_log_dir_path}"
@@ -174,7 +174,7 @@ if Plan::import 'print_errlog'; then
         local message="${1:-$(cat "$PLAN__PATH_LOG_ERR" 2> /dev/null)}"
         if [ -n "$message" ]; then
             Plan::utils.hr '1:52' " $PLAN__PATH_LOG_ERR " >&2
-            printf '%b%s\033[0m\n' "$PLAN__COLOR_STEP_FAIL" "$message" >&2
+            printf '%b%s\033[0m\n' "${PLAN__FG//@/$PLAN__STATLOG_FAIL_COLOR}" "$message" >&2
             Plan::utils.hr '1:52' >&2
         fi
     }

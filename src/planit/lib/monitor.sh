@@ -67,7 +67,7 @@ Plan::monitor.loop() {
 
     local title="${PLAN__MODULE_TITLE:-Running Process}"
     local -i depth=0
-    local spinner_str="${PLAN__ICON_SPINNER:-'\ \ | | / / - -'}"
+    local spinner_str="${PLAN__STATLOG_SPINNER:-'\ \ | | / / - -'}"
 
     while :; do
         case "$1" in
@@ -113,7 +113,7 @@ Plan::monitor.loop() {
     while kill -0 "$proc_pid" 2>/dev/null; do
         tput cr el
 
-        if [ "$PLAN__STATLOG_GET_LAST" != 'false' ]; then
+        if [ "$PLAN__STATLOG_GET_TAIL" != 'false' ]; then
             _last="$(tail -n1 "$log_path" 2>/dev/null || :)"
             [ -n "$_last" ] &&
                 last="$_last"

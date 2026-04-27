@@ -18,23 +18,11 @@
     2. Kill all children, e.g.: `kill -- -$$` with `SIGTERM` trap.
     3. Remove successful PIDs from `PLAN__PID_CACHE` (race conditions apply on cancel signal)
 
-- [ ] **(Critical)** Add option to run custom cleanup scripts -- global scope and module scope -- before **Planit** cleanup.
+- [x] Allow passing arguments to module calls; maybe use a new module-specific config option (this would require the name of the specific module)
 
-- [ ] **(Critical)** Allow sourcing of modules in the main module execution loop.
+    This can be accomplished using `PLAN__MODULE_CMD` and `PLAN__MODULES_DEFAULT_CMD`. Command strings are parsed by `Plan::utils.parse_cmd()`.
 
-    - Modules should be allowed to influence the environment of subsequent modules.
-
-    - This can be accomplished by allowing some modules to be sourced into the main execution loop.
-
-    - Sourced modules must be of file type `.sh` or directory of `.sh` modules (extension requirement TBD).
-
-    - Requires the entire execution loop be ran in a subshell to prevent main environment contamination.
-
-- [ ] Detect and report stalled module with a provided timout.
-
-    If stdin is handled with control provided by a foreground process in an alt screen, detection could offer a resolution route via the same system.
-
-- [ ] Implement module counter for non-default module titles.
+- [x] Implement module index for non-default module titles.
 
     ```
     ✔ Updating Apt Repos (1/7)
@@ -42,9 +30,43 @@
     ⣴ Cloning Branch 'main' (3/7)
     ```
 
-- [ ] Expose more environment variables to modules for additional control over installer state, e.g., internal step recovery.
+- [ ] **(Critical)** Add option to run custom cleanup scripts -- global scope and module scope -- before **Planit** cleanup.
 
-- [ ] Allow passing arguments to module calls; maybe use a new module-specific config option (this would require the name of the specific module)
+- [ ] **(Critical)** Allow sourcing of modules in the main module execution loop.
+
+    - [x] Allow general sourcing for access to **Planit** variables.
+
+    - [ ] Module event loop must be ran in a subshell to prevent main environment contamination.
+
+        - Currently modules can be sourced in their own isolated subshell.
+
+    - [ ] Modules should be allowed to influence the environment of subsequent modules.
+
+        - This can be accomplished by allowing some modules to be sourced into the main execution loop.
+
+    - [ ] Require `.sh` sourcing only.
+
+- [ ] **(Critical)** Expose more environment variables to modules for additional control over installer state, e.g., internal step recovery.
+
+- [ ] **(Critical)** When `PATH__MODULE_TITLE` is set, module status lines should be merged into a single status line that reports sub-module indexes or percentage.
+
+    ```
+    - (1/2) Running Module Group 1 [6/6]
+    - (2/2) Running module Group 2 [5/8]
+    ```
+
+    ```
+    - (1/2) Running Module Group 1 [100%]
+    - (2/2) Running Module Group 2 [75%]
+    ```
+
+- [ ] Handle requests on stdin (maybe?)
+
+    This feature would be outside the scope of **Planit** but would be nice to have. Maybe allow bringing background process into foreground on an alt screen.
+
+- [ ] Detect and report stalled module with a provided timout.
+
+    If stdin is handled with control provided by a foreground process in an alt screen, detection could offer a resolution route via the same system.
 
 ### State & Recovery
 
@@ -64,6 +86,42 @@
 
     This will likely need something other than `yq`, e.g., **Python**. Require as little software as possible to use **Planit**.
 
+- [ ] Create proper config parser rather than sourcing configs as a shell script.
+
+    ```sh
+    Plan::config.parse() {
+        local path="$1"
+        ! [ -f "$path" ] \
+            && return 1
+        local line k v
+        while IFS=$'\n' read -r line; do
+            line="${line%${line##*[![:space:]]}*}"
+            line="${line#*${line%%[![:space:]]*}}"
+            [ "${line::1}" = '#' ] \
+                && continue
+            ! [[ "$line" =~ ^ *[a-zA-Z0-9_]+\ *=\ *.+$ ]] \
+                return 1
+            IFS='=' read -r k v <<< "$line"
+            k="${k// /}"
+            v="${v#*${v%%[![:space:]]*}}"
+            if [[ "$v" =~ ^".+"$ ]]; then
+                Plan::config.strip v \"
+            elif [[ "$v" =~ ^'.+'$ ]]; then
+                Plan::config.strip v \'
+            fi
+        done < "$path"
+    }
+
+    Plan::config.strip() {
+        local -n nameref="$1"
+        local char="$2"
+        [ "${nameref::1}" = "$char" ] \
+            && nameref="${nameref:1}"
+        [ -z "${nameref##*"$char"}" ] \
+            && nameref="${nameref%${char}*}"
+    }
+    ```
+
 ### Logging & Reporting
 
 - [x] Implement general terminal logging functions.
@@ -77,10 +135,6 @@
     2. #1 but using `import.sh`-specific environment variables; maybe ideal given import logs can make parsing debug messages annoying.
 
     3. Refactor `logging.sh` as a completely independant module; seems the most reasonable solution.
-
-- [ ] Handle requests on stdin (maybe?)
-
-    This feature would be outside the scope of **Planit** but would be nice to have. Maybe allow bringing background process into foreground on an alt screen.
 
 - [ ] Add more debug logs.
 

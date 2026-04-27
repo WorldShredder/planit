@@ -1,6 +1,8 @@
 <div align=center>
     <img src='/../assets/logo.png' />
 </div>
+<h3 align=center>Distro Agnostic + Simple Configuration + Zero Dependencies</h3>
+<br>
 <br>
 
 **Planit** is a lightweight, modular Bash4 installer framework for Linux that simplifies multi-step software installation workflows without runtime dependencies. Designed for developers who need to ship self-contained installers with minimal overhead -- all modules are executed through a single framework that adds negligible size to your release.
@@ -28,6 +30,9 @@
 </div>
 
 ## Getting Started
+
+> [!NOTE]
+> For a comprehensive overview, see: [Planit Documentation](#documentation)
 
 Example installation directory:
 
@@ -109,9 +114,9 @@ bash MyInstaller/install
 
 ## Documentation
 
-- #### [Creating Modules](docs/modules.md)
+- #### [Planit Installer Modules](docs/modules.md)
 
-- #### [Module Naming Convention](docs/naming-convention.md)
+- #### [Module Naming Conventions](docs/naming-convention.md)
 
 - #### [Configuration & Customization](docs/configuration.md)
 
