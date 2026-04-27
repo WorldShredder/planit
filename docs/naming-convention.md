@@ -14,7 +14,7 @@ Module names define two important properties:
 
 ## Name Format
 
-**Planit** expects module file names to begin with an integer followed by an underscore; everything after this prefix is interpreted as a format string (see below). This ensures each module is executed in lexical order and provides **Planet** a clear delimiter to extract title format strings.
+**Planit** expects module file names to begin with an integer followed by an underscore; everything after this prefix is interpreted as a format string (see below). This ensures each module is executed in lexical order and provides **Planit** a clear delimiter to extract title format strings.
 
 **Format:** `<PREFIX><TITLE>[.EXTENSION]`
 
@@ -26,7 +26,7 @@ Module names define two important properties:
 Title segments written in _snake case_ are automatically formatted by **Planit** using _title case_. Underscores are interpreted as spaces and are required.
 
 > [!IMPORTANT]
-> If the name contains a `.`, then the file must include an extension, otherwise use [Raw Format](#raw-format). This is due to **Planet** trimming off the right-most `.`.
+> If the name contains a `.`, then the file must include an extension, otherwise use [Raw Format](#raw-format). This is due to **Planit** trimming off the right-most `.`.
 
 #### Example
 
