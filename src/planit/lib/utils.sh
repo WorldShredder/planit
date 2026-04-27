@@ -2,16 +2,65 @@
 # shellcheck disable=SC1090,SC1091,SC2034
 
 #
-# Dependencies
-#
-
-source "${PLAN__PATH_ROOT}/lib/logging.sh" --component logger
-
-#
 # Library
 #
 
 source "${PLAN__PATH_ROOT}/import.sh" Plan::utils "$@"
+
+if Plan::import 'parse_cmd'; then
+    # Usage: utils.parse_cmd ARRAY_REF [COMMAND ...]
+    #
+    # Parses input strings as a shell command and feeds it into an array given
+    # by nameref. Single and double quotes are parsed (mostly) correctly,
+    # allowing more complex command strings to be stored if `eval` is used as
+    # the primary command.
+    #
+    # Positional Args:
+    #   ARRAY_REF  Nameref of an array to feed parsed commands into.
+    #   COMMAND    Space separated list of command strings to parse.
+    #
+    # Example:
+    #   utils.parse_cmd 'bash'
+    #   utils.parse_cmd 'source'
+    #   utils.parse_cmd 'python3'
+    #   utils.parse_cmd 'eval "foo=\"\$foo\" bar=true"' 'bash'
+    #
+    Plan::utils.parse_cmd() {
+        local -n nameref="$1"
+        shift
+        local cmd_string="$*"
+        [ -z "$cmd_string" ] \
+            && return 0
+        local -i i
+        local c next_c _cmd quote
+        for ((i = 0; i < "${#cmd_string}"; i++)); do
+            c="${cmd_string:i:1}"
+            next_c="${cmd_string:i+1:1}"
+            if [ "$c" = '\' ]; then
+                _cmd+="$next_c"
+                i+=1
+            elif [[ "$c" =~ ^(\'|\")$ ]]; then
+                if [ "$c" = "$quote" ]; then
+                    quote=''
+                elif [ -z "$quote" ]; then
+                    quote="$c"
+                else
+                    _cmd+="$c"
+                fi
+            elif [[ "$quote" =~ ^(\'|\")$ ]]; then
+                _cmd+="$c"
+            elif [ "$c" = ' ' ]; then
+                if [ -n "$_cmd" ]; then
+                    nameref+=("$_cmd")
+                    _cmd=''
+                fi
+            else
+                _cmd+="$c"
+            fi
+        done
+        nameref+=("$_cmd")
+    }
+fi
 
 if Plan::import 'ok'; then
     # Usage: utils.ok [OPTION ...] EXIT_CODE [EXIT_CODE ...]
@@ -80,12 +129,12 @@ if Plan::import 'hr'; then
         local -i hr_rlen=hr_len-hr_llen
 
         local hr="\033[0;38;5;${bg:-15}m"
-        for ((i = 0; i < hr_llen; i++)); do hr+="$PLAN__ICON_HR"; done
+        for ((i = 0; i < hr_llen; i++)); do hr+="$PLAN__UI_HR_CHAR"; done
         if [ -n "$header" ]; then
             hr+="\033[38;5;${fg:-0};48;5;${bg:-15}m$header"
             hr+="\033[0;38;5;${bg:-15}m"
         fi
-        for ((i = 0; i < hr_rlen; i++)); do hr+="$PLAN__ICON_HR"; done
+        for ((i = 0; i < hr_rlen; i++)); do hr+="$PLAN__UI_HR_CHAR"; done
 
         printf '%b%b\n' "$hr" "$color_end"
     }
@@ -153,6 +202,12 @@ if Plan::import 'depth2indent'; then
         [ "$total" -gt 0 ] \
             && printf "%-${total}s" ' '
     }
+fi
+
+if Plan::import '+color'; then
+    readonly PLAN__BG='\033[48;5;@m'
+    readonly PLAN__FG='\033[38;5;@m'
+    readonly PLAN__CLR='\033[0m'
 fi
 
 Plan::import.clean

@@ -57,16 +57,16 @@ trap 'printf "\n"; Plan::proc.exit -c "$?" -g "$$" -- -p PLAN__PID_CACHE -f PLAN
 # Logging Setup
 #
 
-if [ -n "$PLAN__LOGGING_LOGS_DIR" ]; then
-    mkdir -p "$PLAN__LOGGING_LOGS_DIR" || {
-        Plan::log.error "Failed to create path '$PLAN__LOGGING_LOGS_DIR'"
+if [ -n "$PLAN__MODULES_LOG_DIR" ]; then
+    mkdir -p "$PLAN__MODULES_LOG_DIR" || {
+        Plan::log.error "Failed to create path '$PLAN__MODULES_LOG_DIR'"
         exit 1
     }
-    PLAN__PATH_LOG="$PLAN__LOGGING_LOGS_DIR"
+    PLAN__PATH_LOG="$PLAN__MODULES_LOG_DIR"
 else
     PLAN__PATH_LOG="$(mktemp -d)"
 fi
-[ "$PLAN__LOGGING_KEEP_LOGS" != 'true' ] \
+[ "$PLAN__MODULES_LOG_KEEP" != 'true' ] \
     && PLAN__FILE_CACHE+=("$PLAN__PATH_LOG")
 PLAN__PATH_LOG_OUT="${PLAN__PATH_LOG}/out.log"
 PLAN__PATH_LOG_ERR="${PLAN__PATH_LOG}/err.log"
@@ -107,9 +107,14 @@ if [ "$PLAN__STATE_TRACK" == 'true' ]; then
             exit 1
         fi
     fi
+
+    ! [ -d "$PLAN__STATE_DIR" ] \
+        && PLAN__STATE_DIR="${TEMPDIR:-/tmp}"
+
     readonly PLAN__STATE_HASH PLAN__STATE_ID PLAN__STATE_DIR
     readonly PLAN__STATE_NAME="planit.${PLAN__STATE_HASH:-$PLAN__STATE_ID}.state"
     readonly PLAN__STATE_PATH="${PLAN__STATE_DIR}/$PLAN__STATE_NAME"
+
     if ! [ -e "$PLAN__STATE_PATH" ]; then
         Plan::modules.save_state "${PLAN__MODULES[0]}" || exit 1
     else
@@ -187,9 +192,9 @@ for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
         declare -a cmd
         PLAN__MODULE_CMD="${PLAN__MODULE_CMD:-"$PLAN__MODULES_DEFAULT_CMD"}"
         [ -n "$PLAN__MODULE_CMD" ] \
-            && read -ra cmd <<< "$PLAN__MODULE_CMD"
+            && Plan::utils.parse_cmd cmd "$PLAN__MODULE_CMD"
 
-        "${cmd[@]}" "$module" \
+        ("${cmd[@]}" "$module") \
             1> "$PLAN__PATH_FIFO_OUT" \
             2> "$PLAN__PATH_FIFO_ERR" &
 
@@ -200,7 +205,7 @@ for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
 
         # Report status
 
-        if ! Plan::utils.ok -i "$PLAN__IGNORE_CODES" "$exit_code"; then
+        if ! Plan::utils.ok -i "$PLAN__MODULE_IGNORE_CODES" "$exit_code"; then
             Plan::report.fail "$PLAN__MODULE_TITLE" "$depth"
             exit "$exit_code"
         fi

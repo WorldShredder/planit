@@ -63,8 +63,8 @@ if ! declare -F 'Plan::import' &> /dev/null; then
     #
     # Positional Args:
     #   MODULE  The module to check for under __NAMESPACE__. If MODULE starts
-    #           with an '&', the module is considered a module group, where
-    #           everything after the '&' is the group identifier. In this mode
+    #           with an '+', the module is considered a module group, where
+    #           everything after the '+' is the group identifier. In this mode
     #           import() will declare a function with an fname of identifier
     #           under __NAMESPACE__ if it does not already exist.
     #
@@ -117,7 +117,7 @@ if ! declare -F 'Plan::import' &> /dev/null; then
 
         local module="$1"
         local call_path="$namespace"
-        if [ "${module::1}" = '&' ]; then
+        if [ "${module::1}" = '+' ]; then
             ! [[ "${module:1}" =~ ^[a-zA-Z0-9\._]+$ ]] \
                 && return 1
             call_path+=".${module:1}"
@@ -136,7 +136,7 @@ if ! declare -F 'Plan::import' &> /dev/null; then
 
         # array expansion is safe here since IFS should never be in module name
         if [ -z "${__C__[*]}" ] || [[ " ${__C__[*]} " == *" $module "* ]]; then
-            [ "${module::1}" = '&' ] \
+            [ "${module::1}" = '+' ] \
                 && eval "function $call_path { :; }"
             ## DEBUG
             # printf '\033[32m[DEBUG] import: %-20s %-20s %-50s <= %s\033[0m\n' \
