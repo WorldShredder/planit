@@ -189,9 +189,11 @@ for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
         # Execute Module
 
         declare -a cmd
-        PLAN__MODULE_CMD="${PLAN__MODULE_CMD:-"$PLAN__MODULES_DEFAULT_CMD"}"
-        [ -n "$PLAN__MODULE_CMD" ] \
-            && Plan::utils.parse_cmd cmd "$PLAN__MODULE_CMD"
+        if [ ! -x "$module" ] || [ -n "$PLAN__MODULE_CMD" ]; then
+            PLAN__MODULE_CMD="${PLAN__MODULE_CMD:-$PLAN__MODULES_DEFAULT_CMD}"
+            [ -n "$PLAN__MODULE_CMD" ] \
+                && Plan::utils.parse_cmd cmd "$PLAN__MODULE_CMD"
+        fi
 
         ("${cmd[@]}" "$module") \
             1> "$PLAN__PATH_FIFO_OUT" \
