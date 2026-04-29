@@ -14,7 +14,7 @@
 
 **Planit** consumes a primary config of name `planit.conf` located in the same directory as the main `planit` directory. This config is sourced outside of the main event loop and before any modules are loaded.
 
-If this config is located elsewhere, or if the config file name deviates from the expected `planit.conf`, you must pass its path as a commandline argument to `planit` using the `-c|--config` option:
+If this config is located elsewhere, or if the config file name deviates from the expected `planit.conf`, you must assign its path to `PLAN__PATH_CONFIG` before calling `planit`, or pass it as a commandline argument to `planit` using the `-c|--config` option:
 
 ```sh
 config_path="${HOME}/settings.config"
@@ -44,6 +44,8 @@ A few additional options are provided for directory-level configs:
 
 | Option | Default | Description
 | ------ | ------- | -----------
+| `PLAN__PATH_CONFIG` | | Path to your main **Planit** config. This config is sourced outside of the main event loop and must be defined before calling `planit`. This can also be set via the `-c\|--config` commandline option.
+| `PLAN__PATH_MODULES` | | Path to the directory containing your installer modules. Can also be set via the `-m\|--modules` commandline option and may be defined in your main **Planit** config.
 | `PLAN__TERM_TIMEOUT` | 10 | Timeout (in seconds) before the installer is force killed. This is preceded by an attempt to terminate processes gracefully.
 
 ### Modules

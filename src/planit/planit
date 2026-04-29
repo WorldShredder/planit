@@ -2,8 +2,8 @@
 # shellcheck disable=SC1090,SC1091,SC2034
 
 PLAN__PATH_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PLAN__PATH_MODULES="${PLAN__PATH_ROOT}/../modules"
-PLAN__PATH_CONFIG="${PLAN__PATH_ROOT}/../planit.conf"
+PLAN__PATH_MODULES="${PLAN__PATH_MODULES:-${PLAN__PATH_ROOT}/../modules}"
+PLAN__PATH_CONFIG="${PLAN__PATH_CONFIG:-${PLAN__PATH_ROOT}/../planit.conf}"
 
 while :; do
     case "$1" in
@@ -28,18 +28,17 @@ while :; do
     shift
 done
 
-if [ ! -d "$PLAN__PATH_MODULES" ]; then
-    printf '\033[31mError: PlanInit: %s' "Invalid modules path '$PLAN__PATH_MODULES'"
-    exit 1
-fi
-
 #
 # Core Config
 #
 
 source "${PLAN__PATH_ROOT}/planit.conf"
-[ -n "$PLAN__PATH_CONFIG" ] \
+[ -f "$PLAN__PATH_CONFIG" ] \
     && source "$PLAN__PATH_CONFIG"
+if [ ! -d "$PLAN__PATH_MODULES" ]; then
+    printf '\033[31mError: PlanInit: %s' "Invalid modules path '$PLAN__PATH_MODULES'"
+    exit 1
+fi
 source "${PLAN__PATH_ROOT}/lib/utils.sh"
 source "${PLAN__PATH_ROOT}/lib/proc.sh"
 source "${PLAN__PATH_ROOT}/lib/logging.sh" --component logger
