@@ -57,6 +57,7 @@ A few additional options are provided for directory-level configs:
 | `PLAN__MODULES_DEFAULT_CMD` | | Default command used to execute each module, e.g., `bash`, `python3`, `source`, or any bash-compatible command or sequence. This value prefixes the module path. For more complex command strings, see [Module Commands](/docs/module-commands.md).
 | `PLAN__MODULES_LOG_DIR` | | The directory where module logs are stored. Three log files are created: `err.log`, `out.log` and `all.log`. Only `all.log` contains messages from all modules, while `err.log` and `out.log` contain messages from the current module only. These logs are used by **Planit** to report module status info in the status log. If no path is given, **Planit** will generate a new temp directory using `mktemp -d`.
 | `PLAN__MODULES_LOG_KEEP` | `false` | If `true`, do not cleanup log files when **Planit** exits.
+| `PLAN__MODULES_SYMLINKS` | `false` | If `true`, allow symlinked modules and module directories.
 
 ### Installer State
 
