@@ -114,10 +114,15 @@ bash MyInstaller/install
 
 ## Documentation
 
-- #### [Planit Installer Modules](docs/modules.md)
+- #### [Planit Installer Modules](/docs/modules.md)
 
-- #### [Module Naming Conventions](docs/naming-convention.md)
+- #### [Module Naming Conventions](/docs/naming-convention.md)
 
-- #### [Configuration & Customization](docs/configuration.md)
+- #### [Configuration & Customization](/docs/configuration.md)
 
+- #### [Module Commands](/docs/module-commands.md)
+
+- #### Examples
+
+    - #### [Spinners](/docs/examples/spinner.md)
 
