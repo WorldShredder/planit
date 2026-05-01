@@ -122,7 +122,7 @@ bash MyInstaller/install
 
 - #### [Module Commands](/docs/module-commands.md)
 
-- #### Examples
+### Examples
 
-    - #### [Spinners](/docs/examples/spinner.md)
+- #### [Spinners](/docs/examples/spinner.md)
 
