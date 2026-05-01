@@ -40,7 +40,7 @@ Plan::modules.fetch() {
     [ -z "${PLAN__MODULES:++}" ] \
         && PLAN__MODULES=()
 
-    local path
+    local path init_path
     if [ -f "${path}/init.sh" ]; then
         PLAN__NUM_MODULES+=1
         PLAN__MODULES+=("${depth}|${path}/init.sh")
@@ -52,8 +52,13 @@ Plan::modules.fetch() {
             return 1
         fi
         if [ -d "$path" ]; then
-            PLAN__MODULES+=("${depth}|${path}")
-            Plan::modules.fetch "$path" "$((depth + 1))"
+            if init_path="$(Plan::modules.fetch_init "$path")"; then
+                PLAN__NUM_MODULES+=1
+                PLAN__MODULES+=("${depth}|${init_path}")
+            else
+                PLAN__MODULES+=("${depth}|${path}")
+                Plan::modules.fetch "$path" "$((depth + 1))"
+            fi
         elif [[ "$path" == *.sh ]]; then
             PLAN__NUM_MODULES+=1
             PLAN__MODULES+=("${depth}|${path}")
@@ -61,6 +66,33 @@ Plan::modules.fetch() {
     done
 
     return 0
+}
+
+# Usage: modules.fetch_init PATH
+#
+# Search a given directory and return the first module init file found. Valid
+# init file names are anything that starts with "init" or "init.*".
+#
+# Positional Args:
+#   PATH  Path to a module directory.
+#
+# Return:
+#   Full path to the init file or error code (1) if no init file is found.
+Plan::modules.fetch_init() {
+    local path="$1"
+    local f
+    ! [ -d "$path" ] \
+        && return 1
+    for f in "${path}"/*; do
+        ! [ -f "$f" ] \
+            && continue
+        f="${f##*/}"
+        if [ "${f%%.*}" = 'init' ]; then
+            printf '%s' "${path}/${f}"
+            return 0
+        fi
+    done
+    return 1
 }
 
 # Usage: modules.format_title MODULE_PATH

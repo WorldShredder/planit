@@ -11,54 +11,31 @@ if Plan::import 'parse_cmd'; then
     # Usage: utils.parse_cmd ARRAY_REF [COMMAND ...]
     #
     # Parses input strings as a shell command and feeds it into an array given
-    # by nameref. Single and double quotes are parsed (mostly) correctly,
-    # allowing more complex command strings to be stored if `eval` is used as
-    # the primary command.
+    # by nameref. Command parsing is handled by Bash with noglob set.
     #
     # Positional Args:
     #   ARRAY_REF  Nameref of an array to feed parsed commands into.
     #   COMMAND    Space separated list of command strings to parse.
     #
     # Example:
-    #   utils.parse_cmd 'bash'
-    #   utils.parse_cmd 'source'
-    #   utils.parse_cmd 'python3'
-    #   utils.parse_cmd 'eval "foo=\"\$foo\" bar=true"' 'bash'
+    #   utils.parse_cmd arr 'bash'
+    #   utils.parse_cmd arr 'source'
+    #   utils.parse_cmd arr 'python3'
+    #   utils.parse_cmd arr 'env foo="$foo" bar=true bash'
     #
     Plan::utils.parse_cmd() {
         local -n nameref="$1"
         shift
         local cmd_string="$*"
         [ -z "$cmd_string" ] \
-            && return 0
-        local -i i
-        local c next_c _cmd quote
-        for ((i = 0; i < "${#cmd_string}"; i++)); do
-            c="${cmd_string:i:1}"
-            next_c="${cmd_string:i+1:1}"
-            if [ "$c" = '\' ]; then
-                _cmd+="$next_c"
-                i+=1
-            elif [[ "$c" =~ ^(\'|\")$ ]]; then
-                if [ "$c" = "$quote" ]; then
-                    quote=''
-                elif [ -z "$quote" ]; then
-                    quote="$c"
-                else
-                    _cmd+="$c"
-                fi
-            elif [[ "$quote" =~ ^(\'|\")$ ]]; then
-                _cmd+="$c"
-            elif [ "$c" = ' ' ]; then
-                if [ -n "$_cmd" ]; then
-                    nameref+=("$_cmd")
-                    _cmd=''
-                fi
-            else
-                _cmd+="$c"
-            fi
-        done
-        nameref+=("$_cmd")
+            && return
+        cmd_string="$(
+            bash -c "set -o noglob; printf '%s\n' $cmd_string"
+        )" || return
+        IFS=$'\n' read -d '' -ra nameref < <(
+            printf '%s\n' "$cmd_string"
+            printf '\0'
+        )
     }
 fi
 
