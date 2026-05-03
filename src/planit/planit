@@ -4,6 +4,7 @@
 PLAN__VERSION='0.1.1'
 
 PLAN__PATH_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export PLAN__PATH_ROOT
 PLAN__PATH_MODULES="${PLAN__PATH_MODULES:-${PLAN__PATH_ROOT}/../modules}"
 PLAN__PATH_CONFIG="${PLAN__PATH_CONFIG:-${PLAN__PATH_ROOT}/../planit.conf}"
 
@@ -201,7 +202,7 @@ for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
                 && Plan::utils.parse_cmd cmd "$PLAN__MODULE_CMD"
         fi
 
-        ("${cmd[@]}" "$module") \
+        ("${cmd[@]}" "$module" "$@") \
             1> "$PLAN__PATH_FIFO_OUT" \
             2> "$PLAN__PATH_FIFO_ERR" &
 

@@ -165,10 +165,10 @@ Plan::modules.get_config() {
     if [ -e "$path" ]; then
         [ -f "$path" ] \
             && path="${path%/*}"
-        if [ -f "${path}/planit.conf" ]; then
-            config="${path}/planit.conf"
-        elif [ -f "${path}/module.conf" ]; then
+        if [ -f "${path}/module.conf" ]; then
             config="${path}/module.conf"
+        elif [ -f "${path}/planit.conf" ]; then
+            config="${path}/planit.conf"
         fi
     fi
     if [ -L "$config" ] && [ "$PLAN__MODULES_SYMLINKS" != 'true' ]; then

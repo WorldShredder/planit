@@ -6,6 +6,9 @@
 <br>
 <br>
 
+> [!WARNING]
+> **Planit** currently lacks a proper config parser, instead opting to treat each config as a shell script to be called in via `source`. This means that you can write dynamic Bash logic in your configs. This is discouraged, however, as such behavior is expected to change once a config parser is implemented.
+
 **Planit** offers a number of configuration options to customize functionality, look and layout. Configurations can be applied at the installer level and module directory level.
 
 ## Config Files

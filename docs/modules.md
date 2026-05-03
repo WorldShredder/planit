@@ -120,5 +120,37 @@ Each module is executed in a subshell, isolating it from **Planit's** primary ev
 
 - Module configuration variables
 
+- Exported installer variables
+
 > [!NOTE]
 > This approach is not ideal for every scenario -- namely scenarios where one installation step would benefit from leveraging the environment of a previous step.
+
+## Passing Commandline Args
+
+Parsing commandline args and exporting the environment from your `install` wrapper will handle most use cases. However, if you require a more dynamic solution, you can rely on **Planit** passing its remaining commandline args to each module during execution.
+
+The simplest way to accomplish this would be to pass `$@` when calling the main `planit` orchestrator:
+
+```sh
+# Separating planit args and module args with '--' is recommended
+"${pwd}/planit/planit" [PLANIT_ARGS ...] -- [MODULE_ARGS ...]
+```
+
+Parsing can then be handled on a per-module basis or via a dedicated parser that is sourced/imported into each module. In the latter case, the `install` wrapper must export the parser's absolute path, or you can leverage `PLAN__PATH_ROOT` which points to the directory containing the `planit` binary.
+
+For example, assume we have the following directory structure:
+
+```
+MyInstaller
+├── modules/
+├── planit/
+├── parser.sh
+└── install
+```
+
+We can then source `parser.sh` within our modules via:
+
+```sh
+source "${PLAN__PATH_ROOT}/../parser.sh"
+```
+
