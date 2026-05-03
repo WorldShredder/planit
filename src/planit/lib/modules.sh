@@ -41,9 +41,10 @@ Plan::modules.fetch() {
         && PLAN__MODULES=()
 
     local path init_path
-    if [ -f "${path}/init.sh" ]; then
+    # catch init in source root modules directory
+    if init_path="$(Plan::modules.fetch_init "$src")"; then
         PLAN__NUM_MODULES+=1
-        PLAN__MODULES+=("${depth}|${path}/init.sh")
+        PLAN__MODULES+=("${depth}|${init_path}")
         return
     fi
     for path in "$src"/*; do
@@ -116,7 +117,7 @@ Plan::modules.format_title() {
         name="${name##*/}"
     fi
     local -a title
-    if [[ "$name" =~ ^[0-9]+_\[.+\](\.sh)?$ ]]; then
+    if [[ "$name" =~ ^[0-9]+_\[ ]] && [[ "$name" =~ \](\.[a-zA-Z0-9]+)?$ ]]; then
         name="${name#*\[}"
         name="${name%]*}"
         local -i i
@@ -134,9 +135,9 @@ Plan::modules.format_title() {
             fi
         done
         read -ra title <<< "$_title"
-    elif [[ "$name" =~ ^[0-9]+_.+(\.sh)?$ ]]; then
+    elif [[ "$name" =~ ^[0-9]+_.+$ ]]; then
         name="${name#*_}"
-        name="${name%.sh*}"
+        name="${name%.*}"
         local sub l r
         while read -rd_ sub; do
             l="${sub::1}"
