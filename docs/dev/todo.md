@@ -3,6 +3,12 @@
 </div>
 <h3 align=center>Todo List</h3>
 <br>
+<div align=center>
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/WorldShredder/planit)
+
+</div>
+<br>
 
 ### Module/Process Handling
 

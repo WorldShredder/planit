@@ -4,6 +4,11 @@
 <h1 align=center>Documentation</h1>
 <h3 align=center>Spinner Examples</h3>
 <br>
+<div align=center>
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/WorldShredder/planit)
+
+</div>
 <br>
 
 > [!IMPORTANT]

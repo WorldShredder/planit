@@ -4,6 +4,11 @@
 <h1 align=center>Documentation</h1>
 <h3 align=center>Installer Modules</h3>
 <br>
+<div align=center>
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/WorldShredder/planit)
+
+</div>
 <br>
 
 **Planit** manages installation via language-agnostic modules -- executable scripts or binaries that you write to handle the installation process. A module may also come in the form of a directory containing sub-modules or an `init` entrypoint.

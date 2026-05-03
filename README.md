@@ -3,6 +3,11 @@
 </div>
 <h3 align=center>Distro Agnostic + Simple Configuration + Zero Dependencies</h3>
 <br>
+<div align=center>
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/WorldShredder/planit)
+
+</div>
 <br>
 
 **Planit** is a lightweight, modular Bash4 installer framework for Linux that simplifies multi-step software installation workflows without runtime dependencies. Designed for developers who need to ship self-contained installers with minimal overhead -- all modules are executed through a single framework that adds negligible size to your release.

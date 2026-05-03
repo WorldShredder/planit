@@ -4,6 +4,11 @@
 <h1 align=center>Documentation</h1>
 <h3 align=center>Module Commands</h3>
 <br>
+<div align=center>
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/WorldShredder/planit)
+
+</div>
 <br>
 
 The `PLAN__MODULE_CMD` and `PLAN__MODULES_DEFAULT_CMD` consumes a command that is used to execute a module or group of modules under a given module directory. The command must be a single keyword (e.g., `source`, `python3`, `bash`) optionally followed by commandline arguments, including strings.
