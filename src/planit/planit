@@ -22,6 +22,10 @@ while :; do
             PLAN__PATH_CONFIG="$2"
             shift
             ;;
+        --cache)
+            PLAN__PATH_CACHE="$2"
+            shift
+            ;;
         -v | --version)
             printf '%s\n' "$PLAN__VERSION"
             exit 0
@@ -106,27 +110,28 @@ Plan::modules.fetch "$PLAN__PATH_MODULES" || exit 1
 # The module index we must start at based on state
 declare -i restore_idx=0
 
-if [ "$PLAN__STATE_TRACK" == 'true' ]; then
-    if [ -z "$PLAN__STATE_ID" ] || [ "$PLAN__STATE_HASH_ID" == 'true' ]; then
-        if ! PLAN__STATE_HASH="$(Plan::modules.generate_state_hash)"; then
-            Plan::log.error 'Failed to generate state hash'
-            exit 1
-        fi
+if [ -z "$PLAN__STATE_ID" ] || [ "$PLAN__STATE_HASH_ID" == 'true' ]; then
+    if ! PLAN__STATE_HASH="$(Plan::modules.generate_state_hash)"; then
+        Plan::log.error 'Failed to generate state hash'
+        exit 1
     fi
+fi
+readonly PLAN__STATE_HASH PLAN__STATE_ID
 
+if [ "$PLAN__STATE_TRACK" == 'true' ]; then
     ! [ -d "$PLAN__STATE_DIR" ] \
         && PLAN__STATE_DIR="${TEMPDIR:-/tmp}"
 
-    readonly PLAN__STATE_HASH PLAN__STATE_ID PLAN__STATE_DIR
+    readonly PLAN__STATE_DIR
     readonly PLAN__STATE_NAME="planit.${PLAN__STATE_HASH:-$PLAN__STATE_ID}.state"
-    readonly PLAN__STATE_PATH="${PLAN__STATE_DIR}/$PLAN__STATE_NAME"
+    readonly PLAN__PATH_STATE="${PLAN__STATE_DIR}/$PLAN__STATE_NAME"
 
-    if ! [ -e "$PLAN__STATE_PATH" ]; then
+    if ! [ -e "$PLAN__PATH_STATE" ]; then
         Plan::modules.save_state "${PLAN__MODULES[0]}" || exit 1
     else
-        Plan::log.debug "State file found '$PLAN__STATE_PATH'"
+        Plan::log.debug "State file found '$PLAN__PATH_STATE'"
         if ! restore_idx="$(Plan::modules.fetch_state_idx)"; then
-            Plan::log.error "Failed to fetch state from '$PLAN__STATE_PATH'"
+            Plan::log.error "Failed to fetch state from '$PLAN__PATH_STATE'"
             exit 1
         elif [ "$restore_idx" -gt '0' ]; then
             module_idx="$(Plan::modules.fetch_rel_idx \
@@ -135,6 +140,29 @@ if [ "$PLAN__STATE_TRACK" == 'true' ]; then
         fi
     fi
 fi
+
+#
+# Module Temp Cache
+#
+
+if [ "$PLAN__ENABLE_CACHE" = 'true' ]; then
+    if [ -z "$PLAN__PATH_CACHE" ]; then
+        readonly PLAN__CACHE_NAME="planit.${PLAN__STATE_HASH:-$PLAN__STATE_ID}.cache"
+        PLAN__PATH_CACHE="${TEMPDIR:-/tmp}/${PLAN__CACHE_NAME}"
+    fi
+    if ! [ -d "$PLAN__PATH_CACHE" ]; then
+        mkdir -p "$PLAN__PATH_CACHE" || {
+            Plan::log.error "Failed to make temp cache '$PLAN__PATH_CACHE'"
+            exit 1
+        }
+    fi
+    Plan::log.debug "Temp cache at '$PLAN__PATH_CACHE'"
+    [ "$PLAN__KEEP_CACHE" != 'true' ] \
+        && PLAN__FILE_CACHE+=("$PLAN__PATH_CACHE")
+fi
+
+# This should probably always be exported
+export PLAN__PATH_CACHE
 
 #
 # Execute Modules
@@ -224,5 +252,8 @@ for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
     [ "$skip_save_state" != 'true' ] \
         && Plan::modules.save_state "${PLAN__MODULES[$((i + 1))]}"
 done
+
+# State file not needed anymore
+PLAN__FILE_CACHE+=("$PLAN__PATH_STATE")
 
 exit 0

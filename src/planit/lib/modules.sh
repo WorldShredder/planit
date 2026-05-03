@@ -236,8 +236,8 @@ Plan::modules.save_state() {
         Plan::log.error "Failed to generate module hash '$module'"
         return 1
     fi
-    if ! printf '%s' "$state" > "$PLAN__STATE_PATH"; then
-        Plan::log.error "Write to state file failed '$PLAN__STATE_PATH'"
+    if ! printf '%s' "$state" > "$PLAN__PATH_STATE"; then
+        Plan::log.error "Write to state file failed '$PLAN__PATH_STATE'"
         return 1
     fi
     return 0
@@ -245,11 +245,11 @@ Plan::modules.save_state() {
 
 # Usage: modules.fetch_state
 #
-# Returns current state hash in PLAN__STATE_PATH or exit code (1) on error.
+# Returns current state hash in PLAN__PATH_STATE or exit code (1) on error.
 #
 Plan::modules.fetch_state() {
     local state
-    state="$(cat "$PLAN__STATE_PATH" 2> /dev/null)" \
+    state="$(cat "$PLAN__PATH_STATE" 2> /dev/null)" \
         || return 1
     printf '%s' "$state"
 }
