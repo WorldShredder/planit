@@ -52,9 +52,17 @@ A few additional options are provided for directory-level configs:
 
 | Option | Default | Description
 | ------ | ------- | -----------
+| `PLAN__TERM_TIMEOUT` | `10` | Timeout (in seconds) before the installer is force killed. This is preceded by an attempt to terminate processes gracefully.
+| `PLAN__ENABLE_CACHE` | `false` | If `true`, create a temp directory using path of `PLAN__PATH_CACHE`. This cache is automatically cleaned up when the main `planit` process exits unless `PLAN__KEEP_CACHE` is `true`.
+| `PLAN__KEEP_CACHE` | `false` | If `true`, **Planit** will not consider the temp cache as a cleanup target. This may be necessary for module recovery if a given module relies on the existence of a certain resource.
+
+### Path
+
+| Option | Default | Description
+| ------ | ------- | -----------
 | `PLAN__PATH_CONFIG` | | Path to your main **Planit** config. This config is sourced outside of the main event loop and must be defined before calling `planit`. This can also be set via the `-c\|--config` commandline option.
 | `PLAN__PATH_MODULES` | | Path to the directory containing your installer modules. Can also be set via the `-m\|--modules` commandline option and may be defined in your main **Planit** config.
-| `PLAN__TERM_TIMEOUT` | 10 | Timeout (in seconds) before the installer is force killed. This is preceded by an attempt to terminate processes gracefully.
+| `PLAN__PATH_CACHE` | | Defines a directory that modules can use as a temporary file cache -- requires `PLAN__ENABLE_CACHE` to be `true`. If undefined, **Planit** will use the deterministic state hash (or `PLAN__STATE_ID`) to create the temp directory in `TEMPDIR` or `/tmp` if the former is unset.
 
 ### Modules
 
