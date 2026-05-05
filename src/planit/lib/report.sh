@@ -26,6 +26,8 @@ if Plan::import --require 'format_index' -- 'ok'; then
         local title="$1"
         local -i depth="${2:-0}"
         local icon="${PLAN__STATLOG_OK_ICON::1}"
+
+        tput cub "$(tput cols)"
         Plan::utils.depth2indent \
             "$depth" "$PLAN__STATLOG_TAB_LEN"
         printf '%b%s' \
@@ -34,8 +36,10 @@ if Plan::import --require 'format_index' -- 'ok'; then
             [ "$PLAN__STATLOG_STICKY_INDEX" = 'true' ] \
                 && Plan::report.format_index
         fi
-        printf ' %b%s\033[0m\n' \
+        printf ' %b%s\033[0m' \
             "${PLAN__FG//@/$PLAN__STATLOG_TITLE_COLOR}" "$title"
+        tput el
+        printf '\n'
     }
 fi
 
@@ -52,6 +56,8 @@ if Plan::import --require 'format_index' -- 'fail'; then
         local title="$1"
         local -i depth="${2:-0}"
         local icon="${PLAN__STATLOG_FAIL_ICON::1}"
+
+        tput cub "$(tput cols)"
         Plan::utils.depth2indent \
             "$depth" "$PLAN__STATLOG_TAB_LEN"
         printf '%b%s' \
@@ -60,8 +66,10 @@ if Plan::import --require 'format_index' -- 'fail'; then
             [ "$PLAN__STATLOG_STICKY_INDEX" = 'true' ] \
                 && Plan::report.format_index
         fi
-        printf ' %b%s\033[0m\n' \
+        printf ' %b%s\033[0m' \
             "${PLAN__FG//@/$PLAN__STATLOG_TITLE_COLOR}" "$title"
+        tput el
+        printf '\n'
     }
 fi
 
@@ -86,6 +94,7 @@ if Plan::import --require 'format_index' -- 'status'; then
         local last="$3"
         local -i depth="${4:-0}"
 
+        tput cub "$(tput cols)"
         Plan::utils.depth2indent \
             "$depth" "$PLAN__STATLOG_TAB_LEN"
         printf "%b%-${spin_len}s" \
@@ -94,8 +103,10 @@ if Plan::import --require 'format_index' -- 'status'; then
             && Plan::report.format_index
         printf ' %b%s' \
             "${PLAN__FG//@/$PLAN__STATLOG_TITLE_COLOR}" "$title"
-        printf ' %b%s\033[0m\r' \
+        printf ' %b%s\033[0m' \
             "${PLAN__FG//@/$PLAN__STATLOG_TAIL_COLOR}" "$last"
+        tput el
+        printf '\r'
     }
 fi
 
