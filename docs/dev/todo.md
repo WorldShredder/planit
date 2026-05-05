@@ -68,7 +68,7 @@
 
 - [ ] Handle requests on stdin (maybe?)
 
-    This feature would be outside the scope of **Planit** but would be nice to have. Maybe allow bringing background process into foreground on an alt screen.
+    This feature would be outside the scope of **Planit** but would be nice to have. Maybe allow bringing background process into foreground on an alt screen. Would reduce compatibility unless a very robut method was used.
 
 - [ ] Detect and report stalled module with a provided timout.
 
@@ -145,6 +145,8 @@
 - [ ] Add more debug logs.
 
 - [ ] Handle truncating on entire status message string in `report.status()`. Current method in `monitor.sh` doesn't account for long module titles.
+
+- [ ] Consider switching out `tput` commands for a full `printf` solution: `printf '\r%-*s' "$delta" "status"`. This would go along with the line-trunction todo.
 
 ### User Interface
 

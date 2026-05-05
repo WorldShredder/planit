@@ -115,6 +115,9 @@ Plan::monitor.loop() {
             _last="$(tail -n1 "$log_path" 2>/dev/null || :)"
             [ -n "$_last" ] &&
                 last="$_last"
+            # absolute get rid of these
+            last="${last//$'\r'/}"
+            last="${last//$'\n'/}"
         fi
 
         # TODO: move truncate to report.status() on whole message
