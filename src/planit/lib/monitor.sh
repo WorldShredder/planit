@@ -111,8 +111,6 @@ Plan::monitor.loop() {
     # Main report loop
     local last _last
     while kill -0 "$proc_pid" 2>/dev/null; do
-        tput cr el
-
         if [ "$PLAN__STATLOG_GET_TAIL" != 'false' ]; then
             _last="$(tail -n1 "$log_path" 2>/dev/null || :)"
             [ -n "$_last" ] &&
@@ -137,6 +135,5 @@ Plan::monitor.loop() {
         spin_idx=(spin_idx+1)%"${#spinner[@]}"
         sleep 0.1
     done
-    tput cr el
 }
 
