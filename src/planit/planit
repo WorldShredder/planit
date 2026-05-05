@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1090,SC1091,SC2034
 
-PLAN__VERSION='0.3.0a'
+PLAN__VERSION='0.3.1a'
 
 PLAN__PATH_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export PLAN__PATH_ROOT
