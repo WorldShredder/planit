@@ -58,9 +58,9 @@ Plan::modules.fetch() {
                 PLAN__MODULES+=("${depth}|${init_path}")
             else
                 PLAN__MODULES+=("${depth}|${path}")
-                Plan::modules.fetch "$path" "$((depth + 1))"
+                Plan::modules.fetch "$path" "$((depth + 1))" || return 1
             fi
-        elif [[ "$path" == *.sh ]]; then
+        elif [ -f "$path" ] && [[ "$path" != *.conf ]]; then
             PLAN__NUM_MODULES+=1
             PLAN__MODULES+=("${depth}|${path}")
         fi
