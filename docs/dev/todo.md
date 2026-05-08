@@ -74,6 +74,8 @@
 
     If stdin is handled with control provided by a foreground process in an alt screen, detection could offer a resolution route via the same system.
 
+- [ ] Expand `.planitignore` logic to function more like `.gitignore` within the module directory scope. The existence of an empty `.planitignore` should cause planit to ignore the entire directory (current function).
+
 ### State & Recovery
 
 - [x] Store installer state on disk for install recovery.

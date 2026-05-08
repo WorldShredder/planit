@@ -130,6 +130,16 @@ Each module is executed in a subshell, isolating it from **Planit's** primary ev
 > [!NOTE]
 > This approach is not ideal for every scenario -- namely scenarios where one installation step would benefit from leveraging the environment of a previous step.
 
+### Environment Variables
+
+**Planit** exports some environment variables that can be accessed by your modules without requiring `source` as the module command.
+
+| Variable | Description
+| -------- | -----------
+| `PLAN__PATH_ROOT` | The absolute path to the **Planit** directory where the `planit` binary is held.
+| `PLAN__PATH_MODULE` | The absolute path to the current module binary.
+| `PLAN__PATH_MODULE_DIR` | The absolute path to the current module's directory.
+
 ## Passing Commandline Args
 
 Parsing commandline args and exporting the environment from your `install` wrapper will handle most use cases. However, if you require a more dynamic solution, you can rely on **Planit** passing its remaining commandline args to each module during execution.

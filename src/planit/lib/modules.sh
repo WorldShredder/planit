@@ -53,6 +53,8 @@ Plan::modules.fetch() {
             return 1
         fi
         if [ -d "$path" ]; then
+            [ -f "${path}/.planitignore" ] \
+                && continue
             if init_path="$(Plan::modules.fetch_init "$path")"; then
                 PLAN__NUM_MODULES+=1
                 PLAN__MODULES+=("${depth}|${init_path}")

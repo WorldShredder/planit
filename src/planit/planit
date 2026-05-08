@@ -221,6 +221,11 @@ for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
             exit 0
         fi
 
+        # Module Environment
+
+        PLAN__PATH_MODULE="$module"
+        PLAN__PATH_MODULE_DIR="${module%/*}"
+
         # Execute Module
 
         declare -a cmd
