@@ -13,7 +13,7 @@
 
 ## Framework Logging
 
-Log messages produced by the **Planit** framework are handled by the [logging.sh](/src/planit/lib/logging.sh) library. Several levels and associated functions are provided by this library, and can be used by your `install` wrapper if needed.
+Log messages produced by the **Planit** framework are handled by the [logging](/src/planit/lib/logging.sh) library. Several functions are provided by this library which can be used by your `install` wrapper if desired.
 
 These loggers occupy the `Plan::log.*` function namespace and `PLAN__LOGGING_*` variable namespace. Logger output is sent over `stderr` only (no writes to disk).
 
@@ -28,13 +28,16 @@ Example below assumes a `planit/` directory on the same level as your `install` 
 pwd="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 source "${pwd}/planit/planit.conf"
-source "${pwd}/planit.conf"
+source "${pwd}/planit.conf" # optional
 
 # Logging module relies on this variable
 PLAN__PATH_ROOT="${pwd}/planit"
 
 # Specifying the component for a minimal import
 source "${pwd}/planit/lib/logging.sh" --component logger
+
+# Now you can call a logger
+Plan::log.info This is an info log message
 ```
 
 ### Functions
@@ -69,9 +72,9 @@ Plan::log.debug MESSAGE
 
 ## Module Logging
 
-Output from modules on `stdout` and `stderr` are captures by the `monitor.sh` library and redirected to two named pipes as a preprocessing step. These messages are then collected and written to the `out.log`, `err.log` and `all.log` log files, stored in `PLAN__MODULES_LOG_DIR`. These messages are then displayed in the status log next to the module title, depending on your configuration.
+Output from modules on `stdout` and `stderr` is captured by the [monitor](/src/lib/monitor.sh) library and redirected to two named pipes as a preprocessing step. These messages are then collected and written to the `out.log`, `err.log` and `all.log` log files, stored in `PLAN__MODULES_LOG_DIR`. These messages are then displayed in the status log next to the module title, depending on your configuration.
 
-**Planit** also provides a special log file called `mod.log` which can only be written to using the `Plan::log.mod` function. This function is defined and exported in the `logging.sh` library, and can be used in your modules to provide clearer inline status log entries.
+**Planit** also provides a special log file called `mod.log` which can only be written to using the `Plan::log.mod` function. This function is defined and exported in the [logging](/src/lib/logging.sh) library, and can be used in your modules to provide clearer inline status log entries.
 
 > [!NOTE]
 > The **Planit** error handler pulls messages from `err.log` exlusively and is not affected by the use of `Plan::log.mod`.
