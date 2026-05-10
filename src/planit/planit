@@ -52,7 +52,7 @@ if [ ! -d "$PLAN__PATH_MODULES" ]; then
 fi
 source "${PLAN__PATH_ROOT}/lib/utils.sh"
 source "${PLAN__PATH_ROOT}/lib/proc.sh"
-source "${PLAN__PATH_ROOT}/lib/logging.sh" --component logger
+source "${PLAN__PATH_ROOT}/lib/logging.sh"
 
 declare -a PLAN__PID_CACHE
 declare -a PLAN__FILE_CACHE
@@ -78,9 +78,10 @@ else
 fi
 [ "$PLAN__MODULES_LOG_KEEP" != 'true' ] \
     && PLAN__FILE_CACHE+=("$PLAN__PATH_LOG")
-PLAN__PATH_LOG_OUT="${PLAN__PATH_LOG}/out.log"
-PLAN__PATH_LOG_ERR="${PLAN__PATH_LOG}/err.log"
-PLAN__PATH_LOG_ALL="${PLAN__PATH_LOG}/all.log"
+export PLAN__PATH_LOG_OUT="${PLAN__PATH_LOG}/out.log"
+export PLAN__PATH_LOG_ERR="${PLAN__PATH_LOG}/err.log"
+export PLAN__PATH_LOG_ALL="${PLAN__PATH_LOG}/all.log"
+export PLAN__PATH_LOG_MOD="${PLAN__PATH_LOG}/mod.log"
 
 PLAN__PATH_FIFO="${PLAN__PATH_LOG}/fifo"
 PLAN__PATH_FIFO_OUT="${PLAN__PATH_FIFO}/out"
@@ -205,6 +206,25 @@ for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
         [ -n "$config" ] \
             && { source "$config" || exit 1; }
 
+        # Module Logging
+
+        PLAN__STATLOG_TAIL_FROM="${PLAN__STATLOG_TAIL_FROM:-STDALL}"
+        case "${PLAN__STATLOG_TAIL_FROM^^}" in
+            STDMOD) PLAN__PATH_LOG_TAIL="$PLAN__PATH_LOG_MOD" ;;
+            STDOUT) PLAN__PATH_LOG_TAIL="$PLAN__PATH_LOG_OUT" ;;
+            STDERR) PLAN__PATH_LOG_TAIL="$PLAN__PATH_LOG_ERR" ;;
+            STDALL | '') PLAN__PATH_LOG_TAIL="$PLAN__PATH_LOG_ALL" ;;
+            *)
+                Plan::log.error \
+                    "Invalid module log source '$PLAN__STATLOG_TAIL_FROM'"
+                exit 1
+                ;;
+        esac
+
+        printf '' > "$PLAN__PATH_LOG_MOD"
+
+        # Module Title
+
         if [ -z "$PLAN__MODULE_TITLE" ]; then
             PLAN__MODULE_TITLE="$(Plan::modules.format_title "$module")"
             if [ -z "$PLAN__MODULE_TITLE" ]; then
@@ -241,7 +261,7 @@ for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
 
         # Monitor Execution
 
-        Plan::monitor.run "$!" "$PLAN__PATH_LOG_ALL" --depth "$depth"
+        Plan::monitor.run "$!" "$PLAN__PATH_LOG_TAIL" --depth "$depth"
         exit_code="$?"
 
         # Report status

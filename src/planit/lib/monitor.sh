@@ -136,7 +136,7 @@ Plan::monitor.loop() {
             "$depth"
 
         spin_idx=(spin_idx+1)%"${#spinner[@]}"
-        sleep 0.1
+        sleep 0.05
     done
 }
 

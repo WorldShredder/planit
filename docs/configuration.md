@@ -71,9 +71,9 @@ A few additional options are provided for directory-level configs:
 | `PLAN__MODULES_DEFAULT_TITLE` | `Running Module` | Module title used as a fallback if the current module title is improperly formatted.
 | `PLAN__MODULES_ENFORCE_TITLE` | `false` | If `true`, do not use fallback title and return error if module title is incorrectly formatted.
 | `PLAN__MODULES_DEFAULT_CMD` | | Default command used to execute each module, e.g., `bash`, `python3`, `source`, or any bash-compatible command or sequence. This value prefixes the module path. For more complex command strings, see [Module Commands](/docs/module-commands.md).
-| `PLAN__MODULES_LOG_DIR` | | The directory where module logs are stored. Three log files are created: `err.log`, `out.log` and `all.log`. Only `all.log` contains messages from all modules, while `err.log` and `out.log` contain messages from the current module only. These logs are used by **Planit** to report module status info in the status log. If no path is given, **Planit** will generate a new temp directory using `mktemp -d`.
-| `PLAN__MODULES_LOG_KEEP` | `false` | If `true`, do not cleanup log files when **Planit** exits.
 | `PLAN__MODULES_SYMLINKS` | `false` | If `true`, allow symlinked modules and module directories.
+| `PLAN__MODULES_LOG_DIR` | | The directory where module logs are stored. Four log files are created: `err.log`, `out.log`, `all.log` and `mod.log`. Only `all.log` contains messages from all modules, while `err.log` and `out.log` contain messages from the current module only. These logs are used by **Planit** to report module status info in the status log. If no path is given, **Planit** will generate a new temp directory using `mktemp -d`.
+| `PLAN__MODULES_LOG_KEEP` | `false` | If `true`, do not cleanup log files when **Planit** exits.
 
 ### Installer State
 
@@ -89,11 +89,13 @@ A few additional options are provided for directory-level configs:
 | Option | Default | Description
 | ------ | ------- | -----------
 | `PLAN__STATLOG_GET_TAIL` | `true` | If `true`, show last log entry from module output in status line.
+| `PLAN__STATLOG_KEEP_TAIL` | `false` | If `true`, keep last log entry from module output in status line after module execution.
+| `PLAN__STATLOG_TAIL_FROM` | `STDALL` | Define which file descriptor to pull module log messages from for the status log. This can be `STDOUT`, `STDERR`, `STDALL` or `STDMOD`. See [docs/logging.md](/docs/logging.md#module-logging).
 | `PLAN__STATLOG_TAB_LEN` | `1` | Indentation length applied to sub-module status lines based on their directory depth. Set to `0` for no indentation.
 | `PLAN__STATLOG_SHOW_DIR` | `true` | If `true`, show module directory names. Formatting rules apply, see [Naming Convention](/docs/naming-convention.md).
 | `PLAN__STATLOG_SHOW_INDEX` | `true` | If `true`, show module index in status log.
 | `PLAN__STATLOG_STICKY_INDEX` | `true` | If `true`, module index will remain in the module's status line after processing. If `false`, index only appears during module execution.
-| `PLAN__STATLOG_SPINNER` | `\ \ \| \| / / - -` | Space-separated list of spinner characters, where each character represents a frame of animation. By default, each frame is displayed for 0.1 seconds. You can increase display duration in multiples of 0.1 by adding two or more of the same character. See [Spinner Examples](/docs/examples/spinner.md).
+| `PLAN__STATLOG_SPINNER` | `\ \ \| \| / / - -` | Space-separated list of spinner characters, where each character represents a frame of animation. By default, each frame is displayed for `0.05` seconds. You can increase display duration in multiples of `0.05` by adding two or more of the same character. See [Spinner Examples](/docs/examples/spinner.md).
 | `PLAN__STATLOG_SPINNER_COLOR` | `5` | Spinner character color displayed in the current status line during module execution.
 | `PLAN__STATLOG_TITLE_COLOR` | `98` | Step title (module title) color.
 | `PLAN__STATLOG_TAIL_COLOR` | `3` | Color of last log entry from module, displayed in the current status line during module execution.
@@ -114,6 +116,8 @@ A few additional options are provided for directory-level configs:
 
 
 ### Logging
+
+See [docs/logging.md](/docs/logging.md#framework-logging)
 
 | Option | Default | Description
 | ------ | ------- | -----------

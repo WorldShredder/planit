@@ -82,4 +82,33 @@ if Plan::import 'logger'; then
     Plan::log.init
 fi
 
+if Plan::import 'mod'; then
+    Plan::log.mod() {
+        local color nocolor delay
+        while :; do
+            case "$1" in
+                -c | --color)
+                    color="\033[38;5;${2}m"
+                    nocolor='\033[0m'
+                    shift
+                    ;;
+                -d | --delay)
+                    delay="$2"
+                    shift
+                    ;;
+                --)
+                    shift
+                    break
+                    ;;
+                *) break ;;
+            esac
+            shift
+        done
+        printf '%b%s%b\n' "$color" "$*" "$nocolor" >> "$PLAN__PATH_LOG_MOD"
+        # must add delay for monitor loop 0.05s (fragile approach)
+        sleep "${delay:-0.1}"
+    }
+    export -f Plan::log.mod
+fi
+
 Plan::import.clean

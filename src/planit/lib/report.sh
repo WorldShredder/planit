@@ -38,7 +38,8 @@ if Plan::import --require 'format_index' -- 'ok'; then
         fi
         printf ' %b%s\033[0m' \
             "${PLAN__FG//@/$PLAN__STATLOG_TITLE_COLOR}" "$title"
-        tput el
+        [ "$PLAN__STATLOG_KEEP_TAIL" != 'true' ] \
+            && tput el
         printf '\n'
     }
 fi
@@ -68,7 +69,8 @@ if Plan::import --require 'format_index' -- 'fail'; then
         fi
         printf ' %b%s\033[0m' \
             "${PLAN__FG//@/$PLAN__STATLOG_TITLE_COLOR}" "$title"
-        tput el
+        [ "$PLAN__STATLOG_KEEP_TAIL" != 'true' ] \
+            && tput el
         printf '\n'
     }
 fi
