@@ -82,7 +82,7 @@ A few additional options are provided for directory-level configs:
 | `PLAN__STATE_TRACK` | `true` | If `true`, keep track of installation state and allow **Planit** to restore from a failed run.
 | `PLAN__STATE_ID` | | Can be any string, conventionally the name and version of your project -- e.g., `MyInstaller-1.0` -- and use it to salt the state-file hash if `PLAN__STATE_HASH_ID` is `true`, otherwise set the _name segment_ of a plaintext state file to this value -- e.g., `planit.MyInstaller-1.0.state`.
 | `PLAN__STATE_HASH_ID` | `true` | If `true`, generate a deterministic hash and use it as the _name segment_ of a hashed state file. If `PLAN__STATE_ID` is set, use it as a salt when generating the hash.
-| `PLAN__STATE_DIR` | | The directory to store the installer state file. This can be a path, variable or Bash command substitution that returns a valid directory path. If no path is given, **Planit** will look a valid path first in `$TEMPDIR` then `/tmp`.
+| `PLAN__STATE_DIR` | | The directory to store the installer state file. This can be a path, variable or Bash command substitution that returns a valid directory path. If no path is given, **Planit** will look for a valid path first in `$TEMPDIR` then `/tmp`.
 
 ### Status Log
 
