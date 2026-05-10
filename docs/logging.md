@@ -40,7 +40,7 @@ source "${pwd}/planit/lib/logging.sh" --component logger
 ### Functions
 
 ```
-Plan::log.debug MESSAGE
+Plan::log.error MESSAGE
 ```
 
 - **Level**: `ERROR`
@@ -61,10 +61,10 @@ Plan::log.info MESSAGE
 - **ID**: `3`
 
 ```
-Plan::log.error MESSAGE
+Plan::log.debug MESSAGE
 ```
 
-- **Level**: `ERROR`
+- **Level**: `DEBUG`
 - **ID**: `4`
 
 ## Module Logging
