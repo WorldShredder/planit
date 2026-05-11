@@ -101,7 +101,7 @@ This sets up a minimal enviroment for the library to leverage using import utili
     then
         Plan::foo.hash() {
             local algo="$1"; shift
-            case "$1" in
+            case "$algo" in
                 md5) Plan::foo.md5 "$*";;
                 sha) Plan::foo.sha256 "$*";;
                 *) return 1;;
