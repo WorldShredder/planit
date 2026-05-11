@@ -26,6 +26,9 @@ while :; do
             PLAN__PATH_CACHE="$2"
             shift
             ;;
+        --debug-import)
+            __DEBUG_IMPORT__='true'
+            ;;
         -v | --version)
             printf '%s\n' "$PLAN__VERSION"
             exit 0

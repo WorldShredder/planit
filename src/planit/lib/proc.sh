@@ -12,7 +12,7 @@ source "${PLAN__PATH_ROOT}/lib/utils.sh" --component hr,+color
 # Library
 #
 
-source "${PLAN__PATH_ROOT}/import.sh" Plan::proc "$@"
+source "${PLAN__PATH_ROOT}/utils/import.sh" Plan::proc "$@"
 
 if Plan::import 'cleanup'; then
     # Usage: proc.cleanup [-p|--pids ARRAY_REF] [-f|--files ARRAY_REF]

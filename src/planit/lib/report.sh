@@ -11,7 +11,7 @@ source "${PLAN__PATH_ROOT}/lib/utils.sh" --component depth2indent,+color
 # Library
 #
 
-source "${PLAN__PATH_ROOT}/import.sh" Plan::report "$@"
+source "${PLAN__PATH_ROOT}/utils/import.sh" Plan::report "$@"
 
 if Plan::import --require 'format_index' -- 'ok'; then
     # Usage: report.ok TITLE [DEPTH]

@@ -5,7 +5,7 @@
 # Library
 #
 
-source "${PLAN__PATH_ROOT}/import.sh" Plan::utils "$@"
+source "${PLAN__PATH_ROOT}/utils/import.sh" Plan::utils "$@"
 
 if Plan::import 'parse_cmd'; then
     # Usage: utils.parse_cmd ARRAY_REF [COMMAND ...]

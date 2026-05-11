@@ -11,7 +11,7 @@ source "${PLAN__PATH_ROOT}/lib/utils.sh" --component +color
 # Library
 #
 
-source "${PLAN__PATH_ROOT}/import.sh" Plan::log "$@"
+source "${PLAN__PATH_ROOT}/utils/import.sh" Plan::log "$@"
 
 if Plan::import 'logger'; then
     declare -A PLAN__LOG_LEVELS
