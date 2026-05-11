@@ -63,7 +63,7 @@ This sets up a minimal enviroment for the library to leverage using import utili
 
     ### Positional Args
 
-    1. `COMPONENT`
+    1. #### `COMPONENT`
 
         The component to check for under `__NAMESPACE__`. If `COMPONENT` starts with a `+`, it is considered a _component group_ and everything after `+` is the _group identifier_. In this mode, `Plan::import` will attempt to declare the identifier as a function under `__NAMESPACE__` if it doesn't already exist.
 
