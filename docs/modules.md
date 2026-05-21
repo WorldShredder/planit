@@ -136,8 +136,8 @@ Each module is executed in a subshell, isolating it from **Planit's** primary ev
 
 | Variable | Description
 | -------- | -----------
-| `PLAN__PATH_ROOT` | The absolute path to the **Planit** directory where the `planit` binary is held.
-| `PLAN__PATH_MODULE` | The absolute path to the current module binary.
+| `PLAN__PATH_ROOT` | The absolute path to the **Planit** directory where the `planit` script is held.
+| `PLAN__PATH_MODULE` | The absolute path to the current executed module.
 | `PLAN__PATH_MODULE_DIR` | The absolute path to the current module's directory.
 
 ## Passing Commandline Args
@@ -151,7 +151,7 @@ The simplest way to accomplish this would be to pass `$@` when calling the main 
 "${pwd}/planit/planit" [PLANIT_ARGS ...] -- [MODULE_ARGS ...]
 ```
 
-Parsing can then be handled on a per-module basis or via a dedicated parser that is sourced/imported into each module. In the latter case, the `install` wrapper must export the parser's absolute path, or you can leverage `PLAN__PATH_ROOT` which points to the directory containing the `planit` binary.
+Parsing can then be handled on a per-module basis or via a dedicated parser that is sourced/imported into each module. In the latter case, the `install` wrapper must export the parser's absolute path, or you can leverage `PLAN__PATH_ROOT` which points to the directory containing the main `planit` script.
 
 For example, assume we have the following directory structure:
 

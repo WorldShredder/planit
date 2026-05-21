@@ -16,6 +16,19 @@
 
 **Planit** offers a number of configuration options to customize functionality, look and layout. Configurations can be applied at the installer level and module directory level.
 
+## Commandline Options
+
+These options can be passed when calling `planit` in your install wrapper.
+
+| Short | Long | Value | Description
+| ----- | -----| ----- | -----------
+| `-m` | `--modules` | `PATH` | Path to your modules directory.
+| `-c` | `--config` | `PATH` | Path to your core config. If not set, **Planit** will search for `planit.conf` in its grandparent directory, e.g.: `planit/../planit.conf`.
+| | `--cache` | `PATH` | Path to the directory used as a temporary file cache.
+| | `--vcache` | `PATH` | Path to the directory used as a temporary variable cache.
+| | `--debug-import` | | Enable debug messages for **Planit's** import utility.
+| `-v` | `--version` | | Print current **Planit** version.
+
 ## Config Files
 
 ### Global Config
@@ -25,8 +38,9 @@
 If this config is located elsewhere, or if the config file name deviates from the expected `planit.conf`, you must assign its path to `PLAN__PATH_CONFIG` before calling `planit`, or pass it as a commandline argument to `planit` using the `-c|--config` option:
 
 ```sh
-config_path="${HOME}/settings.config"
-planit/planit --config "$config_path"
+# install
+cd "$(dirname "${BASH_SOURCE[0]}")"
+planit/planit --config "${HOME}/settings.config"
 ```
 
 ### Directory Config
@@ -53,8 +67,10 @@ A few additional options are provided for directory-level configs:
 | Option | Default | Description
 | ------ | ------- | -----------
 | `PLAN__TERM_TIMEOUT` | `10` | Timeout (in seconds) before the installer is force killed. This is preceded by an attempt to terminate processes gracefully.
-| `PLAN__ENABLE_CACHE` | `false` | If `true`, create a temp directory using path of `PLAN__PATH_CACHE`. This cache is automatically cleaned up when the main `planit` process exits unless `PLAN__KEEP_CACHE` is `true`.
-| `PLAN__KEEP_CACHE` | `false` | If `true`, **Planit** will not consider the temp cache as a cleanup target. This may be necessary for module recovery if a given module relies on the existence of a certain resource.
+| `PLAN__ENABLE_CACHE` | `false` | If `true`, create a temp directory using path of `PLAN__PATH_CACHE`. This cache is automatically cleaned up by default. See [docs](/docs/cache.md#file-cache) for usage.
+| `PLAN__ENABLE_VCACHE` | `false` | If `true`, create a scope-dependent variable cache under `PLAN__PATH_VCACHE`. This cache is automatically cleaned up by default. See [docs](/docs/cache.md#variable-cache-vcache) for usage.
+| `PLAN__KEEP_CACHE` | `never` | Determines if and when _file cache_ data is kept after **Planit** exits. Accepted values are `always`, `never`, and `onfail`. See [docs](/docs/cache.md#persistent-cache) for usage.
+| `PLAN__KEEP_VCACHE` | `never` | Determines if and when _vcache_ data is kept after **Planit** exits. Accepted values are `always`, `never`, and `onfail`. See [docs](/docs/cache.md#persistent-cache) for usage.
 
 ### Path
 
@@ -62,7 +78,8 @@ A few additional options are provided for directory-level configs:
 | ------ | ------- | -----------
 | `PLAN__PATH_CONFIG` | | Path to your main **Planit** config. This config is sourced outside of the main event loop and must be defined before calling `planit`. This can also be set via the `-c\|--config` commandline option.
 | `PLAN__PATH_MODULES` | | Path to the directory containing your installer modules. Can also be set via the `-m\|--modules` commandline option and may be defined in your main **Planit** config.
-| `PLAN__PATH_CACHE` | | Defines a directory that modules can use as a temporary file cache -- requires `PLAN__ENABLE_CACHE` to be `true`. If undefined, **Planit** will use the deterministic state hash (or `PLAN__STATE_ID`) to create the temp directory in `TEMPDIR` or `/tmp` if the former is unset.
+| `PLAN__PATH_CACHE` | | The directory used as a temporary file cache -- requires `PLAN__ENABLE_CACHE` to be `true`. If undefined, **Planit** will use the deterministic state hash (or `PLAN__STATE_ID`) to create the temp directory in `TEMPDIR` or `/tmp`. See [docs](/docs/cache.md#file-cache) for usage.
+| `PLAN__PATH_VCACHE` | | The directory used by **Planit** to cache scope-dependent variables -- requires `PLAN__ENABLE_CACHE` to be `true`. If undefined, **Planit** will use the state hash (or `PLAN__STATE_ID`) to create the directory under `TEMPDIR` or `/tmp`. See [docs](/docs/cach.md#variable-cache-vcache) for usage.
 
 ### Modules
 

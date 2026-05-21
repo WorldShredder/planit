@@ -59,12 +59,6 @@ if Plan::import 'cleanup'; then
     #
     # Gracefully terminates a process.
     #
-    # Options:
-    #   -p, --pids   A name reference pointing to the array holding process
-    #                IDs to terminate.
-    #   -f, --files  A name reference pointing to the array holding files
-    #                to cleanup from system.
-    #
     Plan::proc.terminate() {
         local pid="$1"
         if [ -z "$pid" ] || ! kill -0 "$pid" 2> /dev/null; then

@@ -127,8 +127,10 @@ if Plan::import 'md5'; then
     #
     Plan::utils.md5() {
         [ -z "$1" ] && return 1
-        local res
-        res="$(md5sum <<< "$1")" && cut -d' ' -f1 <<< "$res"
+        (
+            set -o pipefail
+            md5sum <<< "$1" | cut -d' ' -f1
+        )
     }
 fi
 
@@ -142,8 +144,10 @@ if Plan::import 'sha1'; then
     #
     Plan::utils.sha1() {
         [ -z "$1" ] && return 1
-        local res
-        res="$(sha1sum <<< "$1")" && cut -d' ' -f1 <<< "$res"
+        (
+            set -o pipefail
+            sha1sum <<< "$1" | cut -d' ' -f1
+        )
     }
 fi
 
@@ -157,8 +161,10 @@ if Plan::import 'sha256'; then
     #
     Plan::utils.sha256() {
         [ -z "$1" ] && return 1
-        local res
-        res="$(sha256sum <<< "$1")" && cut -d' ' -f1 <<< "$res"
+        (
+            set -o pipefail
+            sha256sum <<< "$1" | cut -d' ' -f1
+        )
     }
 fi
 

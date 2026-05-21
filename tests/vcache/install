@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+pwd="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || exit 1
+
+"$pwd"/planit/src/planit/planit \
+    --modules "${pwd}/modules" \
+    --config "${pwd}/planit.conf"
