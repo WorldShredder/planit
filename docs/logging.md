@@ -42,33 +42,25 @@ Plan::log.info 'This is an info log message'
 
 ### Functions
 
-```
-Plan::log.error MESSAGE
-```
+- #### `Plan::log.error MESSAGE`
 
-- **Level**: `ERROR`
-- **ID**: `1`
+    - **Level**: `ERROR`
+    - **ID**: `1`
 
-```
-Plan::log.warn MESSAGE
-```
+- #### `Plan::log.warn MESSAGE`
 
-- **Level**: `WARN`
-- **ID**: `2`
+    - **Level**: `WARN`
+    - **ID**: `2`
 
-```
-Plan::log.info MESSAGE
-```
+- #### `Plan::log.info MESSAGE`
 
-- **Level**: `INFO`
-- **ID**: `3`
+    - **Level**: `INFO`
+    - **ID**: `3`
 
-```
-Plan::log.debug MESSAGE
-```
+- #### `Plan::log.debug MESSAGE`
 
-- **Level**: `DEBUG`
-- **ID**: `4`
+    - **Level**: `DEBUG`
+    - **ID**: `4`
 
 ## Module Logging
 

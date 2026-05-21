@@ -86,6 +86,49 @@
 
 - [ ] Implement internal step recovery; this can be accomplished by exposing modules to an environment variable pointing to its own FIFO and a function to calculate an internal state hash.
 
+### Cache
+
+- [x] Root and local vcaches should use not use unified directories ~unless configured as such with `PLAN__UNIFY_VCACHE`~. Instead, each cache layer should be its own directory to allow restoring previous cache states when traversing back up the local and root layers.
+
+    This adds better nesting compatibility to vcache.
+
+    #### Example
+    ```sh
+    modules/a     # local layer = a (new)
+    modules/a/b   # local layer = b (new)
+    modules/a/b/c # local layer = c (new)
+    modules/a/b   # local layer = b (restored)
+    modules/a     # local layer = a (restored)
+    ```
+
+- [x] VCache IDs should be deterministic hashes to help with above implementation.
+
+    #### Example
+    ```sh
+    planit.*.vcache/
+        global.d/
+            global_var_a
+            global_var_b
+            global_var_c
+        root.d/
+            78ff0f7e5d9bb859/
+                root_var_a
+                root_var_b
+            9434bd9319af9442/
+                root_var_a
+                root_var_b
+        local.d/
+            295ca74a2d1e5c70/
+                local_var_a
+            08d879bea85218ee/
+                local_var_a
+                local_var_b
+    ```
+
+- [ ] Add option to restrict external access to file cache and vcache.
+
+    In most cases only the executing user and root should need access to cached data, but this should be optional in case modules feed cached data to external users or group users.
+
 ### Configuration
 
 - [x] Add options to disable/enable directory display in the event log.

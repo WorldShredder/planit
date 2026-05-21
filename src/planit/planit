@@ -4,7 +4,6 @@
 PLAN__VERSION='0.4.1a'
 
 PLAN__PATH_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-export PLAN__PATH_ROOT
 PLAN__PATH_MODULES="${PLAN__PATH_MODULES:-${PLAN__PATH_ROOT}/../modules}"
 PLAN__PATH_CONFIG="${PLAN__PATH_CONFIG:-${PLAN__PATH_ROOT}/../planit.conf}"
 
@@ -26,6 +25,10 @@ while :; do
             PLAN__PATH_CACHE="$2"
             shift
             ;;
+        --vcache)
+            PLAN__PATH_VCACHE="$2"
+            shift
+            ;;
         --debug-import)
             __DEBUG_IMPORT__='true'
             ;;
@@ -41,6 +44,23 @@ while :; do
     esac
     shift
 done
+
+#
+# Module Environment
+#
+
+export PLAN__PATH_ROOT
+export PLAN__PATH_LOG_OUT
+export PLAN__PATH_LOG_ERR
+export PLAN__PATH_LOG_ALL
+export PLAN__PATH_LOG_MOD
+export PLAN__PATH_CACHE
+export PLAN__PATH_VCACHE
+export PLAN__VCACHE_ROOT_ID
+export PLAN__VCACHE_LOCAL_ID
+export PLAN__PATH_MODULE
+export PLAN__PATH_MODULE_DIR
+export PLAN__MODULE_INDEX
 
 #
 # Core Config
@@ -60,11 +80,42 @@ source "${PLAN__PATH_ROOT}/lib/logging.sh"
 declare -a PLAN__PID_CACHE
 declare -a PLAN__FILE_CACHE
 
-trap 'Plan::proc.exit -c "$?" -g "$$" -- -p PLAN__PID_CACHE -f PLAN__FILE_CACHE' \
-    QUIT EXIT
+keep_cache() {
+    local cache_name="$1" persist="$2" code="$3" keep='false'
+    case "${persist^^}" in
+        ALWAYS) keep='true' ;;
+        NEVER) : ;;
+        ONFAIL) [ "$code" != '0' ] && keep='true' ;;
+        *)
+            Plan::log.warn \
+                "'$cache_name' is '$persist'" \
+                "; expected 'always', 'never', or 'onfail'" \
+                " -- defaulting to 'never'"
+            ;;
+    esac
+    printf '%s' "$keep"
+}
 
-trap 'printf "\n"; Plan::proc.exit -c "$?" -g "$$" -- -p PLAN__PID_CACHE -f PLAN__FILE_CACHE' \
-    INT TERM HUP
+exit_handler() {
+    local code="$1"
+    local group="$2"
+
+    local keep_cache keep_vcache
+    keep_cache="$(keep_cache PLAN__KEEP_CACHE "$PLAN__KEEP_CACHE" "$code")"
+    keep_vcache="$(keep_cache PLAN__KEEP_VCACHE "$PLAN__KEEP_VCACHE" "$code")"
+
+    if [ "$keep_cache" != 'true' ] && [ -e "$PLAN__PATH_CACHE" ]; then
+        PLAN__FILE_CACHE+=("$PLAN__PATH_CACHE")
+    fi
+    if [ "$keep_vcache" != 'true' ] && [ -e "$PLAN__PATH_VCACHE" ]; then
+        PLAN__FILE_CACHE+=("$PLAN__PATH_VCACHE")
+    fi
+    Plan::proc.exit \
+        -c "$code" -g "$group" -- -p PLAN__PID_CACHE -f PLAN__FILE_CACHE
+}
+
+trap 'exit_handler "$?" "$$"' QUIT EXIT
+trap 'printf "\n"; exit_handler "$?" "$$"' INT TERM HUP
 
 #
 # Logging Setup
@@ -81,10 +132,10 @@ else
 fi
 [ "$PLAN__MODULES_LOG_KEEP" != 'true' ] \
     && PLAN__FILE_CACHE+=("$PLAN__PATH_LOG")
-export PLAN__PATH_LOG_OUT="${PLAN__PATH_LOG}/out.log"
-export PLAN__PATH_LOG_ERR="${PLAN__PATH_LOG}/err.log"
-export PLAN__PATH_LOG_ALL="${PLAN__PATH_LOG}/all.log"
-export PLAN__PATH_LOG_MOD="${PLAN__PATH_LOG}/mod.log"
+PLAN__PATH_LOG_OUT="${PLAN__PATH_LOG}/out.log"
+PLAN__PATH_LOG_ERR="${PLAN__PATH_LOG}/err.log"
+PLAN__PATH_LOG_ALL="${PLAN__PATH_LOG}/all.log"
+PLAN__PATH_LOG_MOD="${PLAN__PATH_LOG}/mod.log"
 
 PLAN__PATH_FIFO="${PLAN__PATH_LOG}/fifo"
 PLAN__PATH_FIFO_OUT="${PLAN__PATH_FIFO}/out"
@@ -146,27 +197,65 @@ if [ "$PLAN__STATE_TRACK" == 'true' ]; then
 fi
 
 #
-# Module Temp Cache
+# Module File Cache
 #
 
 if [ "$PLAN__ENABLE_CACHE" = 'true' ]; then
+    readonly PLAN__CACHE_NAME="planit.${PLAN__STATE_HASH:-$PLAN__STATE_ID}.cache"
     if [ -z "$PLAN__PATH_CACHE" ]; then
-        readonly PLAN__CACHE_NAME="planit.${PLAN__STATE_HASH:-$PLAN__STATE_ID}.cache"
-        PLAN__PATH_CACHE="${TEMPDIR:-/tmp}/${PLAN__CACHE_NAME}"
+        PLAN__PATH_CACHE="${TEMPDIR:-/tmp}"
     fi
+    PLAN__PATH_CACHE+="/${PLAN__CACHE_NAME}"
+    readonly PLAN__PATH_CACHE
     if ! [ -d "$PLAN__PATH_CACHE" ]; then
         mkdir -p "$PLAN__PATH_CACHE" || {
             Plan::log.error "Failed to make temp cache '$PLAN__PATH_CACHE'"
             exit 1
         }
     fi
+
     Plan::log.debug "Temp cache at '$PLAN__PATH_CACHE'"
-    [ "$PLAN__KEEP_CACHE" != 'true' ] \
-        && PLAN__FILE_CACHE+=("$PLAN__PATH_CACHE")
+
+    # [ "$PLAN__KEEP_CACHE" != 'true' ] \
+    #     && PLAN__FILE_CACHE+=("$PLAN__PATH_CACHE")
 fi
 
-# This should probably always be exported
-export PLAN__PATH_CACHE
+#
+# Module Var Cache
+#
+
+if [ "$PLAN__ENABLE_VCACHE" = 'true' ]; then
+    readonly PLAN__VCACHE_NAME="planit.${PLAN__STATE_HASH:-$PLAN__STATE_ID}.vcache"
+    [ -z "$PLAN__PATH_VCACHE" ] \
+        && PLAN__PATH_VCACHE="${TEMPDIR:-/tmp}"
+    PLAN__PATH_VCACHE+="/${PLAN__VCACHE_NAME}"
+    readonly PLAN__PATH_VCACHE
+    if ! [ -d "$PLAN__PATH_VCACHE" ]; then
+        mkdir -p "$PLAN__PATH_VCACHE" || {
+            Plan::log.error "Failed to make vcache '$PLAN__PATH_VCACHE'"
+            exit 1
+        }
+    fi
+
+    Plan::log.debug "vcache at '$PLAN__PATH_VCACHE'"
+
+    # [ "$PLAN__KEEP_CACHE" != 'true' ] \
+    #     && PLAN__FILE_CACHE+=("$PLAN__PATH_VCACHE")
+    for vscope in 'global' 'root' 'local'; do
+        vcache_dir="${PLAN__PATH_VCACHE}/${vscope}.d"
+        if ! [ -d "$vcache_dir" ]; then
+            mkdir "$vcache_dir" || {
+                Plan::log.error "Failed to make '$vscope' vcache: '$vcache_dir'"
+                exit 1
+            }
+        fi
+        export "PLAN__PATH_VCACHE_${vscope^^}=${vcache_dir}"
+        Plan::log.debug "'$vscope' vcache at '$vcache_dir'"
+    done
+
+    source "${PLAN__PATH_ROOT}/lib/vcache.sh"
+    Plan::vcache.update # Initialize scope IDs
+fi
 
 #
 # Execute Modules
@@ -186,6 +275,12 @@ for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
         fi
         continue
     fi
+
+    PLAN__PATH_MODULE="$module"
+    PLAN__PATH_MODULE_DIR="${module%/*}"
+    Plan::log.debug "Module dir is '$PLAN__PATH_MODULE_DIR'"
+    [ "$PLAN__ENABLE_VCACHE" = 'true' ] \
+        && Plan::vcache.update
 
     # shellcheck disable=SC2324
     PLAN__MODULE_INDEX+=1
@@ -244,11 +339,6 @@ for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
             exit 0
         fi
 
-        # Module Environment
-
-        PLAN__PATH_MODULE="$module"
-        PLAN__PATH_MODULE_DIR="${module%/*}"
-
         # Execute Module
 
         declare -a cmd
@@ -258,9 +348,16 @@ for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
                 && Plan::utils.parse_cmd cmd "$PLAN__MODULE_CMD"
         fi
 
-        ("${cmd[@]}" "$module" "$@") \
-            1> "$PLAN__PATH_FIFO_OUT" \
-            2> "$PLAN__PATH_FIFO_ERR" &
+        # We want logs from load function outside status line
+        Plan::vcache.load 'global'
+        Plan::vcache.load 'root'
+        Plan::vcache.load 'local'
+        (
+            # Plan::vcache.load 'global'
+            # Plan::vcache.load 'root'
+            # Plan::vcache.load 'local'
+            "${cmd[@]}" "$module" "$@"
+        ) 1> "$PLAN__PATH_FIFO_OUT" 2> "$PLAN__PATH_FIFO_ERR" &
 
         # Monitor Execution
 
