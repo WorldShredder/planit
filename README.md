@@ -127,6 +127,8 @@ bash MyInstaller/install
 
 - #### [Module Commands](/docs/module-commands.md)
 
+- #### [File & Variable Cache (IPC)](/docs/cache.md)
+
 - #### [Logging](/docs/logging.md)
 
 ### Examples
