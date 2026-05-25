@@ -36,6 +36,12 @@
     ⣴ Cloning Branch 'main' (3/7)
     ```
 
+- [ ] **(Critical)** Implement an `always_run` feature for directory modules.
+
+    This solves the issue of failures occuring in `foo/module_n+1` where `foo/module_n` sets up the environment for its siblings via commandline args. In this scenario, `foo/module_n` is never recalled (state recovered on `foo/module_n+1`) thus changes to commandline args won't resolve issue.
+
+    Solution: Implement some flag or file naming convention for modules that must always be executed when **Planit** enters a given directory, e.g.: `100_always@build_binary`
+
 - [ ] **(Critical)** Add option to run custom cleanup scripts -- global scope and module scope -- before **Planit** cleanup.
 
 - [ ] **(Critical)** Allow sourcing of modules in the main module execution loop.
