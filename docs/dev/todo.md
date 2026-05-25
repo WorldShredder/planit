@@ -185,6 +185,8 @@
 
 - [x] **Planit**-specific error should not lead to printing `err.log`.
 
+- [ ] **(Critical)** Excluding fifos, log files `all.log`, `err.log`, `out.log` and `mod.log` should be compatible with `onfail`, `always` and `never` flags.
+
 - [ ] We need proper debug logging for `import.sh`. This can be accomplished via several means:
 
     1. Create an `import.sh`-specific logger which could plug into the `PLAN__LOGER_*` environment variables; not the most appealing solution.
