@@ -114,6 +114,11 @@ exit_handler() {
         -c "$code" -g "$group" -- -p PLAN__PID_CACHE -f PLAN__FILE_CACHE
 }
 
+Plan::abort() {
+    return 66
+}
+export -f 'Plan::abort'
+
 trap 'exit_handler "$?" "$$"' QUIT EXIT
 trap 'printf "\n"; exit_handler "$?" "$$"' INT TERM HUP
 
@@ -353,9 +358,6 @@ for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
         Plan::vcache.load 'root'
         Plan::vcache.load 'local'
         (
-            # Plan::vcache.load 'global'
-            # Plan::vcache.load 'root'
-            # Plan::vcache.load 'local'
             "${cmd[@]}" "$module" "$@"
         ) 1> "$PLAN__PATH_FIFO_OUT" 2> "$PLAN__PATH_FIFO_ERR" &
 
@@ -372,7 +374,16 @@ for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
         fi
 
         Plan::report.ok "$PLAN__MODULE_TITLE" "$depth"
-    ) || exit "$?"
+    )
+
+    exit_code="$?"
+    # see Plan::abort()
+    if [ "$exit_code" = '66' ]; then
+        Plan::log.info 'Aborting'
+        exit 0
+    fi
+    [ "$exit_code" -gt 0 ] \
+        && exit "$exit_code"
 
     [ "$skip_save_state" != 'true' ] \
         && Plan::modules.save_state "${PLAN__MODULES[$((i + 1))]}"

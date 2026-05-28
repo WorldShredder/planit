@@ -50,7 +50,7 @@ if Plan::import 'logger'; then
             eval "Plan::log.${level,,}() { \
                       Plan::log.logger '${level}' '${icon}' '${color}' \"\$*\"; \
                   }"
-            export -f "Plan::log.${level,,}"
+            # export -f "Plan::log.${level,,}"
         done
 
         # shellcheck disable=SC2329
@@ -76,7 +76,7 @@ if Plan::import 'logger'; then
             printf '%b%s %s%s\033[0m\n' "$color" "$icon" "$caller" "$message" >&2
         }
 
-        export -f 'Plan::log.logger'
+        # export -f 'Plan::log.logger'
         unset -f Plan::log.init
     }
 
