@@ -380,7 +380,7 @@ for ((i = 0; i < "${#PLAN__MODULES[@]}"; i++)); do
     # see Plan::abort()
     if [ "$exit_code" = '66' ]; then
         Plan::log.info 'Aborting'
-        exit 0
+        break
     fi
     [ "$exit_code" -gt 0 ] \
         && exit "$exit_code"
