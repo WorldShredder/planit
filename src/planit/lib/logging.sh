@@ -19,7 +19,7 @@ if Plan::import 'logger'; then
     declare -A PLAN__LOG_COLORS
 
     Plan::log.init() {
-        PLAN__LOG_LEVEL="${PLAN__LOGGING_LEVEL:-NONE}"
+        PLAN__LOG_LEVEL="${PLAN__LOGGING_LEVEL:-INFO}"
         PLAN__CALLER_LEVEL="${PLAN__LOGGING_CALLER_LEVEL:-NONE}"
 
         PLAN__LOG_LEVELS[NONE]=0
