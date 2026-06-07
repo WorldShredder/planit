@@ -62,7 +62,7 @@ Plan::modules.fetch() {
                 PLAN__MODULES+=("${depth}|${path}")
                 Plan::modules.fetch "$path" "$((depth + 1))" || return 1
             fi
-        elif [ -f "$path" ] && [[ "$path" != *.conf ]]; then
+        elif [ -f "$path" ] && ! [[ "$path" =~ \.(txt|conf|config|yml|yaml|json)$ ]]; then
             PLAN__NUM_MODULES+=1
             PLAN__MODULES+=("${depth}|${path}")
         fi

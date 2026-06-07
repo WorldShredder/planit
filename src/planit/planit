@@ -29,6 +29,20 @@ while :; do
             PLAN__PATH_VCACHE="$2"
             shift
             ;;
+        --clear-cache)
+            PLAN__CLEAR_CACHE='true'
+            ;;
+        --clear-vcache)
+            PLAN__CLEAR_VCACHE='true'
+            ;;
+        --clear-state)
+            PLAN__CLEAR_STATE='true'
+            ;;
+        -C | --clear-all)
+            PLAN__CLEAR_CACHE='true'
+            PLAN__CLEAR_VCACHE='true'
+            PLAN__CLEAR_STATE='true'
+            ;;
         --debug-import)
             __DEBUG_IMPORT__='true'
             ;;
@@ -186,6 +200,11 @@ if [ "$PLAN__STATE_TRACK" == 'true' ]; then
     readonly PLAN__STATE_NAME="planit.${PLAN__STATE_HASH:-$PLAN__STATE_ID}.state"
     readonly PLAN__PATH_STATE="${PLAN__STATE_DIR}/$PLAN__STATE_NAME"
 
+    if [ "$PLAN__CLEAR_STATE" = 'true' ]; then
+        Plan::log.debug "Clearing state '$PLAN__STATE_NAME'"
+        rm -rf "$PLAN__PATH_STATE"
+    fi
+
     if ! [ -e "$PLAN__PATH_STATE" ]; then
         Plan::modules.save_state "${PLAN__MODULES[0]}" || exit 1
     else
@@ -212,6 +231,12 @@ if [ "$PLAN__ENABLE_CACHE" = 'true' ]; then
     fi
     PLAN__PATH_CACHE+="/${PLAN__CACHE_NAME}"
     readonly PLAN__PATH_CACHE
+
+    if [ "$PLAN__CLEAR_CACHE" = 'true' ]; then
+        Plan::log.debug "Clearing state '$PLAN__CACHE_NAME'"
+        rm -rf "$PLAN__PATH_CACHE"
+    fi
+
     if ! [ -d "$PLAN__PATH_CACHE" ]; then
         mkdir -p "$PLAN__PATH_CACHE" || {
             Plan::log.error "Failed to make temp cache '$PLAN__PATH_CACHE'"
@@ -220,9 +245,6 @@ if [ "$PLAN__ENABLE_CACHE" = 'true' ]; then
     fi
 
     Plan::log.debug "Temp cache at '$PLAN__PATH_CACHE'"
-
-    # [ "$PLAN__KEEP_CACHE" != 'true' ] \
-    #     && PLAN__FILE_CACHE+=("$PLAN__PATH_CACHE")
 fi
 
 #
@@ -235,6 +257,12 @@ if [ "$PLAN__ENABLE_VCACHE" = 'true' ]; then
         && PLAN__PATH_VCACHE="${TEMPDIR:-/tmp}"
     PLAN__PATH_VCACHE+="/${PLAN__VCACHE_NAME}"
     readonly PLAN__PATH_VCACHE
+
+    if [ "$PLAN__CLEAR_VCACHE" = 'true' ]; then
+        Plan::log.debug "Clearing state '$PLAN__VCACHE_NAME'"
+        rm -rf "$PLAN__PATH_VCACHE"
+    fi
+
     if ! [ -d "$PLAN__PATH_VCACHE" ]; then
         mkdir -p "$PLAN__PATH_VCACHE" || {
             Plan::log.error "Failed to make vcache '$PLAN__PATH_VCACHE'"
@@ -244,8 +272,6 @@ if [ "$PLAN__ENABLE_VCACHE" = 'true' ]; then
 
     Plan::log.debug "vcache at '$PLAN__PATH_VCACHE'"
 
-    # [ "$PLAN__KEEP_CACHE" != 'true' ] \
-    #     && PLAN__FILE_CACHE+=("$PLAN__PATH_VCACHE")
     for vscope in 'global' 'root' 'local'; do
         vcache_dir="${PLAN__PATH_VCACHE}/${vscope}.d"
         if ! [ -d "$vcache_dir" ]; then
