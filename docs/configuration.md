@@ -26,6 +26,10 @@ These options can be passed when calling `planit` in your install wrapper.
 | `-c` | `--config` | `PATH` | Path to your core config. If not set, **Planit** will search for `planit.conf` in its grandparent directory, e.g.: `planit/../planit.conf`.
 | | `--cache` | `PATH` | Path to the directory used as a temporary file cache.
 | | `--vcache` | `PATH` | Path to the directory used as a temporary variable cache.
+| | `--clear-cache` | | Clear file cache before running modules.
+| | `--clear-vcache` | | Clear vcache before running modules.
+| | `--clear-state` | | Reset restore state before running modules.
+| `-C` | `--clear-all` | | Clear all caches and reset restore state before running modules.
 | | `--debug-import` | | Enable debug messages for **Planit's** import utility.
 | `-v` | `--version` | | Print current **Planit** version.
 
