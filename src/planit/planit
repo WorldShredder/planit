@@ -233,7 +233,7 @@ if [ "$PLAN__ENABLE_CACHE" = 'true' ]; then
     readonly PLAN__PATH_CACHE
 
     if [ "$PLAN__CLEAR_CACHE" = 'true' ]; then
-        Plan::log.debug "Clearing state '$PLAN__CACHE_NAME'"
+        Plan::log.debug "Clearing cache '$PLAN__CACHE_NAME'"
         rm -rf "$PLAN__PATH_CACHE"
     fi
 
@@ -259,7 +259,7 @@ if [ "$PLAN__ENABLE_VCACHE" = 'true' ]; then
     readonly PLAN__PATH_VCACHE
 
     if [ "$PLAN__CLEAR_VCACHE" = 'true' ]; then
-        Plan::log.debug "Clearing state '$PLAN__VCACHE_NAME'"
+        Plan::log.debug "Clearing vcache '$PLAN__VCACHE_NAME'"
         rm -rf "$PLAN__PATH_VCACHE"
     fi
 
