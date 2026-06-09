@@ -133,8 +133,8 @@ Plan::abort() {
 }
 export -f 'Plan::abort'
 
-trap 'exit_handler "$?" "$$"' QUIT EXIT
-trap 'printf "\n"; exit_handler "$?" "$$"' INT TERM HUP
+trap 'exit_handler "$?" "$$"' EXIT
+trap 'printf "\n"; exit_handler 1 "$$"' INT TERM HUP QUIT
 
 #
 # Logging Setup
